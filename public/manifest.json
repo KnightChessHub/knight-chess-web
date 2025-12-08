@@ -1,0 +1,18 @@
+{
+  "name": "KnightChess",
+  "short_name": "KnightChess",
+  "description": "Professional Chess Platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#059669",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
+
