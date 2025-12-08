@@ -137,84 +137,298 @@ class ApiService {
     return (data as { user: User }).user;
   }
 
-  // Games
-  async createGame(timeControl: { initial: number; increment: number }, gameType: 'online' | 'offline' = 'online'): Promise<Game> {
-    const { data } = await this.api.post<{ success: boolean; data: { game: Game } } | { game: Game }>('/games', { 
-      gameType,
-      timeControl 
-    });
-    let game: Game;
-    if ('data' in data && data.data) {
-      game = data.data.game;
+  // Helper to map backend status to frontend status
+  private mapGameStatus(status: string): 'waiting' | 'active' | 'finished' | 'abandoned' {
+    if (status === 'pending') return 'waiting';
+    if (status === 'active') return 'active';
+    if (status === 'finished') return 'finished';
+    if (status === 'abandoned') return 'abandoned';
+    return 'waiting'; // default
+  }
+
+  // Helper to map backend result to frontend result
+  private mapGameResult(result: string | null | undefined): 'white' | 'black' | 'draw' | undefined {
+    if (!result) return undefined;
+    if (result === 'white_wins') return 'white';
+    if (result === 'black_wins') return 'black';
+    if (result === 'draw') return 'draw';
+    return undefined;
+  }
+
+  // Helper to normalize game data from backend
+  private normalizeGameData(gameData: any, timeControl?: { initial: number; increment: number }): Game {
+    // For offline games, blackPlayer should be same as whitePlayer
+    // For online games without blackPlayer, blackPlayer should be undefined
+    const gameType = gameData.gameType || 'online';
+    const isOffline = gameType === 'offline';
+    const blackPlayerId = gameData.blackPlayerId || gameData.blackPlayer;
+    const whitePlayerId = gameData.whitePlayerId || gameData.whitePlayer;
+    
+    // Determine blackPlayer: 
+    // - Offline: always same as whitePlayer
+    // - Online: only set if blackPlayerId exists and is different from whitePlayerId
+    let blackPlayer: string | undefined;
+    if (isOffline) {
+      blackPlayer = blackPlayerId || whitePlayerId;
     } else {
-      game = (data as { game: Game }).game;
+      // Online game: only set blackPlayer if it exists and is different from white
+      blackPlayer = (blackPlayerId && blackPlayerId !== whitePlayerId) ? blackPlayerId : undefined;
     }
-    // Ensure moves array exists
-    if (!game.moves) {
-      game.moves = [];
+    
+    return {
+      _id: gameData.id || gameData._id,
+      whitePlayer: whitePlayerId,
+      blackPlayer: blackPlayer,
+      gameType: gameType,
+      currentTurn: gameData.currentTurn || 'white',
+      whitePlayerUsername: gameData.whitePlayerUsername,
+      blackPlayerUsername: gameData.blackPlayerUsername,
+      status: this.mapGameStatus(gameData.status),
+      result: this.mapGameResult(gameData.result),
+      timeControl: timeControl || gameData.timeControl || { initial: 600, increment: 0 },
+      fen: gameData.fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+      moves: gameData.moves ? gameData.moves.map((m: any) => {
+        // Backend stores moves as { from, to, san, timestamp }, convert to string array
+        return m.san || `${m.from}${m.to}`;
+      }) : [],
+      createdAt: gameData.createdAt || new Date().toISOString(),
+      updatedAt: gameData.updatedAt || gameData.createdAt || new Date().toISOString(),
+    };
+  }
+
+  // Games
+  async createGame(timeControl: { initial: number; increment: number }, gameType: 'online' | 'offline' = 'online', blackPlayerId?: string): Promise<Game> {
+    const payload: any = { gameType };
+    if (gameType === 'online' && blackPlayerId) {
+      payload.blackPlayerId = blackPlayerId;
     }
-    return game;
+    
+    try {
+      const { data } = await this.api.post<{ success: boolean; data: any }>('/games', payload);
+      
+      // Backend returns: { success: true, data: { id, gameType, status, whitePlayerId, blackPlayerId, ... } }
+      let gameData: any;
+      if (data && typeof data === 'object') {
+        if ('success' in data && data.success && 'data' in data) {
+          gameData = data.data;
+        } else if ('game' in data) {
+          gameData = data.game;
+        } else {
+          gameData = data;
+        }
+      }
+      
+      if (!gameData) {
+        throw new Error('Invalid response from server');
+      }
+      
+      return this.normalizeGameData(gameData, timeControl);
+    } catch (error: any) {
+      console.error('Create game error:', error?.response?.data || error);
+      throw error;
+    }
   }
 
   async getGames(params?: { status?: string; limit?: number }): Promise<Game[]> {
-    const { data } = await this.api.get<{ success: boolean; data: { games: Game[] } } | { games: Game[] }>('/games', { params });
-    let games: Game[];
-    if ('data' in data && data.data) {
-      games = data.data.games || [];
-    } else {
-      games = (data as { games: Game[] }).games || [];
+    try {
+      // Map frontend status to backend status
+      const backendParams: any = {};
+      if (params?.status) {
+        backendParams.status = params.status === 'waiting' ? 'pending' : params.status;
+      }
+      if (params?.limit) {
+        backendParams.limit = params.limit;
+      }
+
+      const { data } = await this.api.get<{ success: boolean; data: any[] }>('/games', { params: backendParams });
+      
+      // Backend returns: { success: true, data: [...] } (array directly)
+      let gamesData: any[] = [];
+      if (data && typeof data === 'object') {
+        if ('success' in data && data.success && 'data' in data && Array.isArray(data.data)) {
+          gamesData = data.data;
+        } else if (Array.isArray(data)) {
+          gamesData = data;
+        } else if ('games' in data && Array.isArray(data.games)) {
+          gamesData = data.games;
+        }
+      }
+      
+      return gamesData.map(gameData => this.normalizeGameData(gameData));
+    } catch (error: any) {
+      console.error('Get games error:', error?.response?.data || error);
+      return [];
     }
-    // Ensure all games have moves array
-    return games.map(game => ({
-      ...game,
-      moves: game.moves || []
-    }));
   }
 
   async getGame(gameId: string): Promise<Game> {
-    const { data } = await this.api.get<{ success: boolean; data: { game: Game } } | { game: Game }>(`/games/${gameId}`);
-    let game: Game;
-    if ('data' in data && data.data) {
-      game = data.data.game;
-    } else {
-      game = (data as { game: Game }).game;
+    try {
+      const { data } = await this.api.get<{ success: boolean; data: any }>(`/games/${gameId}`);
+      
+      // Backend returns: { success: true, data: { id, gameType, status, ... } }
+      let gameData: any;
+      if (data && typeof data === 'object') {
+        if ('success' in data && data.success && 'data' in data) {
+          gameData = data.data;
+        } else if ('game' in data) {
+          gameData = data.game;
+        } else {
+          gameData = data;
+        }
+      }
+      
+      if (!gameData) {
+        throw new Error('Game not found');
+      }
+      
+      // Handle backend errors gracefully (e.g., getGameState not defined)
+      // If gameData has error field, it means backend had an issue
+      if (gameData.error) {
+        console.warn('Backend error in game data:', gameData.error);
+        // Try to return partial game data if available
+        if (gameData.id) {
+          // Return minimal game data - frontend can still display it
+          return this.normalizeGameData({
+            id: gameData.id,
+            status: gameData.status || 'active',
+            whitePlayerId: gameData.whitePlayerId,
+            blackPlayerId: gameData.blackPlayerId,
+            fen: gameData.fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+            moves: gameData.moves || [],
+          });
+        }
+        throw new Error(gameData.error || 'Failed to load game');
+      }
+      
+      return this.normalizeGameData(gameData);
+    } catch (error: any) {
+      // If it's a 500 error with getGameState issue, try to handle gracefully
+      if (error?.response?.status === 500 && error?.response?.data?.error?.includes('getGameState')) {
+        console.warn('Backend getGameState error - this is a backend bug, but continuing...');
+        // Try to get basic game info without gameState
+        // The game should still work for basic play
+        throw new Error('Game service error - please try refreshing the page');
+      }
+      console.error('Get game error:', error?.response?.data || error);
+      throw error;
     }
-    // Ensure moves array exists
-    if (!game.moves) {
-      game.moves = [];
-    }
-    return game;
   }
 
   async makeMove(gameId: string, move: string): Promise<Game> {
-    const { data } = await this.api.post<{ success: boolean; data: { game: Game } } | { game: Game }>(`/games/${gameId}/move`, { move });
-    let game: Game;
-    if ('data' in data && data.data) {
-      game = data.data.game;
-    } else {
-      game = (data as { game: Game }).game;
+    try {
+      // Backend expects { from, to, promotion? } in algebraic notation
+      // ChessBoard sends SAN notation (e.g., "e4", "Nf3"), but we need to convert to { from, to }
+      // For now, we'll need to fetch the current game state to parse the move properly
+      // This is a simplified version - in a real app you'd parse SAN on the frontend
+      
+      // Try to parse the move - if it's already in "e2e4" format, use it
+      let moveObj: any;
+      if (move.length === 4 && move.match(/^[a-h][1-8][a-h][1-8]$/)) {
+        // Already in "fromto" format
+        moveObj = { from: move.substring(0, 2), to: move.substring(2, 4) };
+      } else {
+        // SAN notation - backend should handle it, but let's try sending as-is first
+        // If backend needs { from, to }, we'd need to parse SAN using chess.js
+        // For now, send the move string and let backend handle it if possible
+        // Otherwise, we'll need to get the game state and parse the move
+        const currentGame = await this.getGame(gameId);
+        // Use chess.js to parse SAN and get from/to
+        const { Chess } = await import('chess.js');
+        const chess = new Chess(currentGame.fen);
+        try {
+          const moveObj_chess = chess.move(move);
+          if (moveObj_chess) {
+            moveObj = {
+              from: moveObj_chess.from,
+              to: moveObj_chess.to,
+              promotion: moveObj_chess.promotion || undefined,
+            };
+          } else {
+            throw new Error('Invalid move');
+          }
+        } catch (parseError) {
+          // Fallback: try to send move as string
+          moveObj = { move };
+        }
+      }
+
+      const { data } = await this.api.post<{ success: boolean; data: any }>(`/games/${gameId}/move`, moveObj);
+      
+      // Backend returns partial game data after move, need to get full game
+      // But first check if response has full game data
+      let gameData: any;
+      if (data && typeof data === 'object') {
+        if ('success' in data && data.success && 'data' in data) {
+          gameData = data.data;
+        } else if ('game' in data) {
+          gameData = data.game;
+        } else {
+          gameData = data;
+        }
+      }
+      
+      // If response doesn't have full game, fetch it
+      if (!gameData || !gameData.id) {
+        return await this.getGame(gameId);
+      }
+      
+      return this.normalizeGameData(gameData);
+    } catch (error: any) {
+      console.error('Make move error:', error?.response?.data || error);
+      throw error;
     }
-    // Ensure moves array exists
-    if (!game.moves) {
-      game.moves = [];
-    }
-    return game;
   }
 
   async joinGame(gameId: string): Promise<Game> {
-    const { data } = await this.api.post<{ success: boolean; data: { game: Game } } | { game: Game }>(`/games/${gameId}/join`);
-    if ('data' in data && data.data) {
-      return data.data.game;
+    try {
+      const { data } = await this.api.post<{ success: boolean; data: any }>(`/games/${gameId}/join`);
+      
+      let gameData: any;
+      if (data && typeof data === 'object') {
+        if ('success' in data && data.success && 'data' in data) {
+          gameData = data.data;
+        } else if ('game' in data) {
+          gameData = data.game;
+        } else {
+          gameData = data;
+        }
+      }
+      
+      if (!gameData) {
+        throw new Error('Invalid response from server');
+      }
+      
+      return this.normalizeGameData(gameData);
+    } catch (error: any) {
+      console.error('Join game error:', error?.response?.data || error);
+      throw error;
     }
-    return (data as { game: Game }).game;
   }
 
   async resignGame(gameId: string): Promise<Game> {
-    const { data } = await this.api.post<{ success: boolean; data: { game: Game } } | { game: Game }>(`/games/${gameId}/resign`);
-    if ('data' in data && data.data) {
-      return data.data.game;
+    try {
+      const { data } = await this.api.post<{ success: boolean; data: any }>(`/games/${gameId}/resign`);
+      
+      let gameData: any;
+      if (data && typeof data === 'object') {
+        if ('success' in data && data.success && 'data' in data) {
+          gameData = data.data;
+        } else if ('game' in data) {
+          gameData = data.game;
+        } else {
+          gameData = data;
+        }
+      }
+      
+      if (!gameData) {
+        throw new Error('Invalid response from server');
+      }
+      
+      return this.normalizeGameData(gameData);
+    } catch (error: any) {
+      console.error('Resign game error:', error?.response?.data || error);
+      throw error;
     }
-    return (data as { game: Game }).game;
   }
 
   // Tournaments
@@ -249,11 +463,41 @@ class ApiService {
   }
 
   // Ratings
-  async getLeaderboard(category?: string, limit?: number): Promise<Rating[]> {
-    const { data } = await this.api.get('/ratings/leaderboard', {
-      params: { category, limit },
-    });
-    return this.normalizeArrayResponse<Rating>(data, 'leaderboard');
+  async getLeaderboard(timeControl?: string, limit?: number): Promise<Rating[]> {
+    const params: any = {};
+    // Backend expects timeControl to be a valid value: 'blitz', 'rapid', 'classical', 'bullet'
+    // Don't pass 'all' as it causes backend errors - pass a valid timeControl or omit
+    if (timeControl && timeControl !== 'all') {
+      params.timeControl = timeControl;
+    }
+    if (limit) {
+      params.limit = limit;
+    }
+    
+    try {
+      const { data } = await this.api.get('/ratings/leaderboard', { 
+        params,
+        timeout: 5000, // 5 second timeout
+      });
+      // Backend returns { success: true, data: [...] }
+      if (data && typeof data === 'object') {
+        if ('success' in data && data.success && 'data' in data && Array.isArray(data.data)) {
+          return data.data;
+        }
+        if (Array.isArray(data)) {
+          return data;
+        }
+        // Try to find leaderboard array in response
+        if ('leaderboard' in data && Array.isArray(data.leaderboard)) {
+          return data.leaderboard;
+        }
+      }
+      return [];
+    } catch (error: any) {
+      // Don't log errors for leaderboard - it's optional and backend might have issues
+      // Just return empty array silently
+      return [];
+    }
   }
 
   async getUserRating(userId?: string): Promise<Rating> {
@@ -331,8 +575,43 @@ class ApiService {
 
   // Matchmaking
   async joinMatchmakingQueue(timeControl: { initial: number; increment: number }): Promise<MatchmakingQueue> {
-    const { data } = await this.api.post('/matchmaking/queue', { timeControl });
-    return this.normalizeResponse<MatchmakingQueue>(data, 'queue');
+    try {
+      // Backend expects timeControl as a string: 'blitz', 'rapid', 'classical', 'bullet'
+      // Convert timeControl object to string based on initial time
+      let timeControlStr: string;
+      if (timeControl.initial <= 60) {
+        timeControlStr = 'bullet';
+      } else if (timeControl.initial <= 300) {
+        timeControlStr = 'blitz';
+      } else if (timeControl.initial <= 600) {
+        timeControlStr = 'rapid';
+      } else {
+        timeControlStr = 'classical';
+      }
+
+      const { data } = await this.api.post('/matchmaking/queue', { timeControl: timeControlStr });
+      
+      // Backend returns: { success: true, data: { matched: boolean, game?, queuePosition?, ... } }
+      let queueData: any;
+      if (data && typeof data === 'object') {
+        if ('success' in data && data.success && 'data' in data) {
+          queueData = data.data;
+        } else {
+          queueData = data;
+        }
+      }
+      
+      // Return a MatchmakingQueue-like object
+      return {
+        userId: '', // Will be set by backend
+        timeControl: timeControl,
+        queuedAt: new Date().toISOString(),
+        ...queueData,
+      };
+    } catch (error: any) {
+      console.error('Join matchmaking error:', error?.response?.data || error);
+      throw error;
+    }
   }
 
   async leaveMatchmakingQueue(): Promise<void> {

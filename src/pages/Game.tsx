@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api';
 import { useGameStore } from '../store/gameStore';
@@ -6,7 +6,7 @@ import { useAuthStore } from '../store/authStore';
 import ChessBoard from '../components/ChessBoard';
 import Card from '../components/Card';
 import Button from '../components/Button';
-import { ArrowLeft, Flag, Clock, RotateCcw, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Flag, Clock, RotateCcw, BarChart3, Play } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import type { Game } from '../types';
 import { useWebSocket } from '../hooks/useWebSocket';
@@ -16,65 +16,161 @@ export default function GamePage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { currentGame, setCurrentGame } = useGameStore();
-  const [game, setGame] = useState<Game | null>(currentGame);
+  const [game, setGame] = useState<Game | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isMyTurn, setIsMyTurn] = useState(false);
   const [orientation, setOrientation] = useState<'white' | 'black'>('white');
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const loadGameRef = useRef<() => Promise<void>>();
 
-  useEffect(() => {
-    if (id) {
-      loadGame();
-      // Poll for updates every 2 seconds if game is active
-      if (game?.status === 'active') {
-        const interval = setInterval(loadGame, 2000);
-        return () => clearInterval(interval);
-      }
-    }
-  }, [id, game?.status]);
-
-  // WebSocket for real-time updates
-  useWebSocket(id || null, (data) => {
-    if (data.game) {
-      setGame(data.game);
-      setCurrentGame(data.game);
-    }
-  });
-
-  useEffect(() => {
-    if (game) {
-      const isWhite = game.whitePlayer === user?._id;
-      setOrientation(isWhite ? 'white' : 'black');
-      const moves = game.moves || [];
-      setIsMyTurn(
-        game.status === 'active' &&
-          ((moves.length % 2 === 0 && isWhite) || (moves.length % 2 === 1 && !isWhite))
-      );
-    }
-  }, [game, user]);
-
-  const loadGame = async () => {
+  const loadGame = useCallback(async () => {
     if (!id) return;
     try {
       const gameData = await apiService.getGame(id);
+      console.log('Game loaded:', gameData.status, 'blackPlayer:', gameData.blackPlayer);
       setGame(gameData);
       setCurrentGame(gameData);
     } catch (error) {
+      console.error('Failed to load game:', error);
       toast.error('Failed to load game');
       navigate('/games');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [id, navigate, setCurrentGame]);
+
+  // Store loadGame in ref so WebSocket callback can use it
+  loadGameRef.current = loadGame;
+
+  // Initial load and setup polling
+  useEffect(() => {
+    if (!id) return;
+
+    // Reset state when game ID changes
+    setGame(null);
+    setIsLoading(true);
+    setIsMyTurn(false);
+    setOrientation('white');
+
+    // Clear any existing interval
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    // Load game initially
+    loadGame();
+
+    // Setup polling - will be updated when game status changes
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [id, loadGame]);
+
+  // Setup/update polling based on game status
+  useEffect(() => {
+    // Clear existing interval
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    // Setup new interval if game is active or waiting
+    if (game && (game.status === 'active' || game.status === 'waiting')) {
+      intervalRef.current = setInterval(() => {
+        loadGame();
+      }, 2000);
+    }
+
+    // Cleanup on unmount or status change
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [game?.status, loadGame]);
+
+  // WebSocket for real-time updates
+  useWebSocket(id || null, useCallback((data) => {
+    if (data.game) {
+      setGame(data.game);
+      setCurrentGame(data.game);
+    } else if (data.type === 'player_joined') {
+      // When a player joins, reload the game to get updated status
+      console.log('Player joined, reloading game...');
+      if (loadGameRef.current) {
+        loadGameRef.current();
+      }
+    }
+  }, [setCurrentGame]));
+
+  useEffect(() => {
+    if (game && user) {
+      const isWhitePlayer = game.whitePlayer === user._id;
+      const isBlackPlayer = game.blackPlayer === user._id;
+      
+      // Set orientation:
+      // - If user is white player: 'white'
+      // - If user is black player: 'black'
+      // - If offline game (both players same): 'white' (default)
+      // - If not a player yet: 'white' (default for viewing)
+      if (isWhitePlayer) {
+        setOrientation('white');
+      } else if (isBlackPlayer) {
+        setOrientation('black');
+      } else {
+        // Not a player or offline game - default to white
+        setOrientation('white');
+      }
+      
+      // Determine if it's my turn using backend's currentTurn field
+      if (game.status === 'active') {
+        if (game.gameType === 'offline') {
+          // For offline games, user can always move (they play both sides)
+          setIsMyTurn(true);
+        } else if (isWhitePlayer || isBlackPlayer) {
+          const isMyTurnNow = 
+            (isWhitePlayer && game.currentTurn === 'white') ||
+            (isBlackPlayer && game.currentTurn === 'black');
+          setIsMyTurn(isMyTurnNow);
+          console.log('Turn check - isWhite:', isWhitePlayer, 'isBlack:', isBlackPlayer, 'currentTurn:', game.currentTurn, 'isMyTurn:', isMyTurnNow);
+        } else {
+          setIsMyTurn(false);
+        }
+      } else {
+        setIsMyTurn(false);
+      }
+    }
+  }, [game, user]);
 
   const handleMove = async (move: string) => {
-    if (!id || !isMyTurn) return;
+    if (!id) {
+      console.error('No game ID');
+      return;
+    }
+    
+    if (!isMyTurn) {
+      console.log('Not your turn - isMyTurn:', isMyTurn, 'game.currentTurn:', game?.currentTurn);
+      toast.error('Not your turn');
+      return;
+    }
 
+    console.log('Making move:', move, 'Game status:', game?.status, 'Is my turn:', isMyTurn);
+    
     try {
       const updatedGame = await apiService.makeMove(id, move);
+      console.log('Move successful, updated game:', updatedGame);
       setGame(updatedGame);
       setCurrentGame(updatedGame);
       toast.success('Move made!');
+      // Reload game to get latest state
+      setTimeout(() => loadGame(), 500);
     } catch (error: any) {
+      console.error('Move error:', error);
       toast.error(error.response?.data?.error || 'Invalid move');
     }
   };
@@ -113,6 +209,23 @@ export default function GamePage() {
   const isWhitePlayer = game.whitePlayer === user?._id;
   const isBlackPlayer = game.blackPlayer === user?._id;
   const isPlayer = isWhitePlayer || isBlackPlayer;
+  // Can join if: game is waiting, user is not a player, game is online, and black player slot is empty
+  const canJoin = game.status === 'waiting' 
+    && !isPlayer 
+    && game.gameType === 'online' 
+    && !game.blackPlayer;
+
+  const handleJoin = async () => {
+    if (!id) return;
+    try {
+      const updatedGame = await apiService.joinGame(id);
+      setGame(updatedGame);
+      setCurrentGame(updatedGame);
+      toast.success('Game joined!');
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Failed to join game');
+    }
+  };
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -126,11 +239,21 @@ export default function GamePage() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Chess Game</h1>
             <p className="text-text-secondary text-lg mt-1">
-              {game.status === 'active' ? 'In Progress' : game.status.charAt(0).toUpperCase() + game.status.slice(1)}
+              {game.status === 'active'
+                ? 'In Progress'
+                : game.status === 'waiting'
+                ? 'Waiting for Player'
+                : game.status.charAt(0).toUpperCase() + game.status.slice(1)}
             </p>
           </div>
         </div>
         <div className="flex gap-3">
+          {canJoin && (
+            <Button variant="primary" onClick={handleJoin} size="md">
+              <Play className="w-5 h-5" />
+              Join Game
+            </Button>
+          )}
           {game.status === 'finished' && (
             <>
               <Button variant="secondary" onClick={() => navigate(`/games/${game._id}/replay`)} size="md">
@@ -152,6 +275,40 @@ export default function GamePage() {
         </div>
       </div>
 
+      {/* Join Game Banner */}
+      {canJoin && (
+        <Card className="bg-primary-light border-2 border-primary animate-slide-up">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Play className="w-6 h-6 text-primary flex-shrink-0" />
+              <div>
+                <h3 className="font-bold text-lg text-primary">Join This Game</h3>
+                <p className="text-text-secondary text-sm mt-1">
+                  This game is waiting for a player. Click the button above to join as Black.
+                </p>
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Waiting for Player Banner */}
+      {game.status === 'waiting' && isWhitePlayer && !game.blackPlayer && (
+        <Card className="bg-warning-light border-2 border-warning animate-slide-up">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Clock className="w-6 h-6 text-warning flex-shrink-0" />
+              <div>
+                <h3 className="font-bold text-lg text-warning">Waiting for Opponent</h3>
+                <p className="text-text-secondary text-sm mt-1">
+                  Your game is waiting for another player to join. Share the game link or wait for matchmaking.
+                </p>
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Chess Board */}
         <div className="lg:col-span-2 flex flex-col items-center space-y-6 animate-scale-in">
@@ -160,7 +317,7 @@ export default function GamePage() {
               fen={game.fen}
               onMove={handleMove}
               orientation={orientation}
-              disabled={!isMyTurn || game.status !== 'active'}
+              disabled={game.status !== 'active' || !isMyTurn}
             />
           </div>
 

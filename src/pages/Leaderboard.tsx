@@ -15,10 +15,12 @@ export default function Leaderboard() {
 
   const loadLeaderboard = async () => {
     try {
-      const data = await apiService.getLeaderboard(category, 100);
+      setIsLoading(true);
+      const data = await apiService.getLeaderboard(category === 'all' ? undefined : category, 100);
       setLeaderboard(data);
     } catch (error) {
       console.error('Failed to load leaderboard:', error);
+      setLeaderboard([]);
     } finally {
       setIsLoading(false);
     }

@@ -11,9 +11,11 @@ export interface User {
 export interface Game {
   _id: string;
   whitePlayer: string;
-  blackPlayer: string;
+  blackPlayer?: string; // Optional - undefined for joinable online games
   whitePlayerUsername?: string;
   blackPlayerUsername?: string;
+  gameType?: 'online' | 'offline'; // Track game type
+  currentTurn?: 'white' | 'black'; // Current turn from backend
   status: 'waiting' | 'active' | 'finished' | 'abandoned';
   result?: 'white' | 'black' | 'draw';
   timeControl: {

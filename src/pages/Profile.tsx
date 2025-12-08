@@ -205,16 +205,16 @@ export default function Profile() {
             </h2>
             {ratings.length > 0 ? (
               <div className="space-y-3">
-                {ratings.map((rating) => (
+                {ratings.map((rating, index) => (
                   <div
-                    key={rating.category}
+                    key={rating.userId ? `${rating.userId}-${rating.category || index}` : `rating-${index}`}
                     className="p-4 bg-bg-tertiary rounded-lg hover:bg-bg-hover transition-colors"
                   >
                     <div className="flex justify-between items-center">
                       <div>
-                        <p className="font-semibold capitalize">{rating.category}</p>
+                        <p className="font-semibold capitalize">{rating.category || 'Overall'}</p>
                         <p className="text-text-secondary text-sm">
-                          {rating.gamesPlayed} games • Peak: {rating.peakRating}
+                          {rating.gamesPlayed || 0} games • Peak: {rating.peakRating || rating.rating || 0}
                         </p>
                       </div>
                       <div className="text-right">

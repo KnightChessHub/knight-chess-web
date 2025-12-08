@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Chess } from 'chess.js';
 import type { Square } from 'chess.js';
+import { toast } from 'react-hot-toast';
 
 interface ChessBoardProps {
   fen?: string;
@@ -61,12 +62,17 @@ export default function ChessBoard({
   const getSquareName = (row: number, col: number): Square => {
     const files = 'abcdefgh';
     const ranks = '87654321';
+    // row and col are actual board coordinates (0-7), not visual positions
+    // So we can use them directly
     return `${files[col]}${ranks[row]}` as Square;
   };
 
   const handleSquareClick = useCallback(
     (square: Square) => {
-      if (disabled) return;
+      if (disabled) {
+        console.log('Board is disabled');
+        return;
+      }
 
       if (selectedSquare === square) {
         setSelectedSquare(null);
@@ -75,7 +81,9 @@ export default function ChessBoard({
       }
 
       const piece = game.get(square);
-      const isMyTurn = game.turn() === (orientation === 'white' ? 'w' : 'b');
+      // Check if it's the correct player's turn based on FEN
+      const currentTurn = game.turn(); // 'w' or 'b'
+      const expectedColor = orientation === 'white' ? 'w' : 'b';
 
       if (selectedSquare && validMoves.includes(square)) {
         // Make move
@@ -86,21 +94,28 @@ export default function ChessBoard({
             promotion: 'q',
           });
           if (move && onMove) {
+            console.log('Sending move:', move.san);
             onMove(move.san);
           }
           setSelectedSquare(null);
           setValidMoves([]);
         } catch (e) {
           console.error('Invalid move:', e);
+          toast.error('Invalid move');
         }
-      } else if (piece && piece.color === (orientation === 'white' ? 'w' : 'b') && isMyTurn) {
-        // Select piece
+      } else if (piece && piece.color === expectedColor && currentTurn === expectedColor) {
+        // Select piece - only if it's the correct color and turn
         setSelectedSquare(square);
         const moves = game.moves({ square, verbose: true });
         setValidMoves(moves.map((m) => m.to as Square));
       } else {
         setSelectedSquare(null);
         setValidMoves([]);
+        if (piece && piece.color !== expectedColor) {
+          console.log('Not your piece');
+        } else if (currentTurn !== expectedColor) {
+          console.log('Not your turn - current:', currentTurn, 'expected:', expectedColor);
+        }
       }
     },
     [game, selectedSquare, validMoves, orientation, disabled, onMove]
@@ -195,8 +210,12 @@ export default function ChessBoard({
     );
   };
 
-  const rows = orientation === 'white' ? [0, 1, 2, 3, 4, 5, 6, 7] : [7, 6, 5, 4, 3, 2, 1, 0];
-  const cols = orientation === 'white' ? [0, 1, 2, 3, 4, 5, 6, 7] : [7, 6, 5, 4, 3, 2, 1, 0];
+  // Row 0 = rank 8 (black pieces), Row 7 = rank 1 (white pieces)
+  // When orientation is 'white', white pieces should be at bottom (row 7 first)
+  // When orientation is 'black', black pieces should be at bottom (row 0 first)
+  // Columns are always left-to-right (a-h), regardless of orientation
+  const rows = orientation === 'white' ? [7, 6, 5, 4, 3, 2, 1, 0] : [0, 1, 2, 3, 4, 5, 6, 7];
+  const cols = [0, 1, 2, 3, 4, 5, 6, 7]; // Always left-to-right (a-h)
 
   return (
     <div
