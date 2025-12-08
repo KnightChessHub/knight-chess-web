@@ -34,7 +34,8 @@ export default function Games() {
 
   const handleCreateGame = async (initial: number, increment: number) => {
     try {
-      const game = await apiService.createGame({ initial, increment });
+      // Create offline game (practice mode - play against yourself)
+      const game = await apiService.createGame({ initial, increment }, 'offline');
       toast.success('Game created!');
       navigate(`/games/${game._id}`);
     } catch (error: any) {
@@ -70,11 +71,11 @@ export default function Games() {
   }
 
   return (
-    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between" style={{ marginBottom: '1rem' }}>
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold" style={{ marginBottom: '0.25rem' }}>Games</h1>
+          <h1 className="text-2xl font-semibold mb-1">Games</h1>
           <p className="text-text-secondary">Play, watch, and analyze chess games</p>
         </div>
         <Button onClick={() => navigate('/games/new')} size="lg">
@@ -84,7 +85,7 @@ export default function Games() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap" style={{ gap: '0.75rem' }}>
+      <div className="flex flex-wrap gap-3">
         {(['all', 'active', 'waiting', 'finished'] as const).map((f) => (
           <Button
             key={f}
@@ -99,8 +100,8 @@ export default function Games() {
 
       {/* Quick Create */}
       <Card>
-        <h3 className="text-lg font-semibold" style={{ marginBottom: '1.25rem' }}>Quick Create</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4" style={{ gap: '1rem' }}>
+        <h3 className="text-lg font-semibold mb-4">Quick Create</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: 'Bullet', initial: 60, increment: 0 },
             { label: 'Blitz', initial: 300, increment: 0 },
@@ -129,7 +130,7 @@ export default function Games() {
           </div>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" style={{ gap: '1rem' }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {games.map((game) => {
             const isPlayer = game.whitePlayer === user?._id || game.blackPlayer === user?._id;
             return (
@@ -139,7 +140,7 @@ export default function Games() {
                 onClick={() => navigate(`/games/${game._id}`)}
                 className="cursor-pointer"
               >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className={`text-sm font-semibold ${getStatusColor(game.status)}`}>
                       {game.status.toUpperCase()}
@@ -151,8 +152,8 @@ export default function Games() {
                     )}
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <div className="flex items-center space-x-2 text-sm">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm">
                       <Users className="w-4 h-4 text-text-secondary" />
                       <span className="text-text-secondary">vs</span>
                       <span className="font-medium">
@@ -161,7 +162,7 @@ export default function Games() {
                       </span>
                     </div>
 
-                    <div className="flex items-center space-x-2 text-sm">
+                    <div className="flex items-center gap-2 text-sm">
                       <Clock className="w-4 h-4 text-text-secondary" />
                       <span className="text-text-secondary">
                         {formatTime(game.timeControl.initial)} + {game.timeControl.increment}s
@@ -178,7 +179,7 @@ export default function Games() {
                       navigate(`/games/${game._id}`);
                     }}
                   >
-                    <Play className="w-4 h-4 mr-2" />
+                    <Play className="w-4 h-4" />
                     {game.status === 'waiting' ? 'Join' : 'View'}
                   </Button>
                 </div>

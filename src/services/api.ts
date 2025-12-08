@@ -80,20 +80,28 @@ class ApiService {
 
   // Auth
   async register(username: string, email: string, password: string): Promise<AuthResponse> {
-    const { data } = await this.api.post<{ success: boolean; data: AuthResponse }>('/auth/register', {
+    const { data } = await this.api.post<{ success: boolean; data: AuthResponse } | AuthResponse>('/auth/register', {
       username,
       email,
       password,
     });
-    return data.data || data;
+    // Handle both response structures
+    if ('success' in data && data.success && 'data' in data) {
+      return data.data;
+    }
+    return data as AuthResponse;
   }
 
   async login(email: string, password: string): Promise<AuthResponse> {
-    const { data } = await this.api.post<{ success: boolean; data: AuthResponse }>('/auth/login', {
+    const { data } = await this.api.post<{ success: boolean; data: AuthResponse } | AuthResponse>('/auth/login', {
       email,
       password,
     });
-    return data.data || data;
+    // Handle both response structures
+    if ('success' in data && data.success && 'data' in data) {
+      return data.data;
+    }
+    return data as AuthResponse;
   }
 
   async verifyToken(): Promise<User> {
@@ -130,8 +138,11 @@ class ApiService {
   }
 
   // Games
-  async createGame(timeControl: { initial: number; increment: number }): Promise<Game> {
-    const { data } = await this.api.post<{ success: boolean; data: { game: Game } } | { game: Game }>('/games', { timeControl });
+  async createGame(timeControl: { initial: number; increment: number }, gameType: 'online' | 'offline' = 'online'): Promise<Game> {
+    const { data } = await this.api.post<{ success: boolean; data: { game: Game } } | { game: Game }>('/games', { 
+      gameType,
+      timeControl 
+    });
     let game: Game;
     if ('data' in data && data.data) {
       game = data.data.game;

@@ -10,7 +10,7 @@ interface CardProps {
 export default function Card({ children, className = '', hover = false, onClick }: CardProps) {
   return (
     <div
-      className={`glass-card rounded-lg transition-all duration-200 p-6 ${
+      className={`glass-card rounded-lg transition-all duration-200 ${
         hover ? 'glass-hover cursor-pointer' : ''
       } ${onClick ? 'cursor-pointer' : ''} ${className}`}
       onClick={onClick}

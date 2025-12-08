@@ -43,8 +43,8 @@ export default function Button({
     >
       {isLoading ? (
         <>
-          <Loader2 className="h-4 w-4 animate-spin mr-2" />
-          Loading...
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span>Loading...</span>
         </>
       ) : (
         children
