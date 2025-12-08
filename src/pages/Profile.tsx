@@ -65,8 +65,8 @@ export default function Profile() {
     <div className="space-y-6 animate-fade-in">
       {/* Profile Header */}
       <Card>
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between space-y-4 md:space-y-0">
-          <div className="flex items-center space-x-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="flex items-center gap-6">
             <div className="w-24 h-24 bg-bg-tertiary border border-border rounded-xl flex items-center justify-center text-4xl font-semibold text-text-primary">
               {user?.username?.[0]?.toUpperCase() || 'U'}
             </div>
@@ -79,7 +79,7 @@ export default function Profile() {
                     onChange={(e) => setEditUsername(e.target.value)}
                     className="px-4 py-2 bg-bg-tertiary border border-border rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-border"
                   />
-                  <div className="flex space-x-2">
+                  <div className="flex gap-3">
                     <Button size="sm" onClick={handleUpdateProfile}>
                       Save
                     </Button>

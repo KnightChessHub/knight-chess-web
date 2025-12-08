@@ -65,17 +65,17 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+    <div className="space-y-6 animate-fade-in">
       {/* Welcome Section */}
-      <div className="text-center mb-6" style={{ marginBottom: '1.5rem' }}>
-        <h1 className="text-3xl font-semibold mb-2">
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold mb-2">
           Welcome back, <span className="text-primary">{user?.username}</span>
         </h1>
         <p className="text-text-secondary">Ready for your next game?</p>
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4" style={{ gap: '1rem' }}>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <div className="flex items-center justify-between">
             <div>
@@ -128,11 +128,11 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4" style={{ gap: '1rem' }}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Quick Match */}
         <Card hover>
-          <div className="space-y-3" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <div className="flex items-center space-x-3">
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-primary-light rounded-lg flex items-center justify-center flex-shrink-0">
                 <Play className="w-5 h-5 text-primary" />
               </div>
@@ -150,8 +150,8 @@ export default function Dashboard() {
 
         {/* Create Game */}
         <Card hover onClick={() => navigate('/games/new')}>
-          <div className="space-y-3" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <div className="flex items-center space-x-3">
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-primary-light rounded-lg flex items-center justify-center flex-shrink-0">
                 <Clock className="w-5 h-5 text-primary" />
               </div>
@@ -183,8 +183,8 @@ export default function Dashboard() {
       {upcomingTournaments.length > 0 && (
         <Card>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold flex items-center space-x-2">
-              <Trophy className="w-6 h-6 text-primary" />
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-primary flex-shrink-0" />
               <span>Upcoming Tournaments</span>
             </h2>
             <Button variant="ghost" size="sm" onClick={() => navigate('/tournaments')}>

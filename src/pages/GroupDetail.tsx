@@ -68,14 +68,14 @@ export default function GroupDetail() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
           <Button variant="ghost" onClick={() => navigate('/groups')} size="md">
             <ArrowLeft className="w-4 h-4" />
             Back
           </Button>
           <div>
-            <h1 className="text-3xl font-semibold">{group.name}</h1>
+            <h1 className="text-2xl font-semibold">{group.name}</h1>
             {group.description && (
               <p className="text-text-secondary mt-1">{group.description}</p>
             )}
@@ -136,12 +136,12 @@ export default function GroupDetail() {
       <Card>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">Members</h2>
-          {isOwner && (
-            <Button variant="ghost" size="sm">
-              <UserPlus className="w-4 h-4 mr-2" />
-              Add Member
-            </Button>
-          )}
+        {isOwner && (
+          <Button variant="ghost" size="sm">
+            <UserPlus className="w-4 h-4" />
+            Add Member
+          </Button>
+        )}
         </div>
         {group.members.length === 0 ? (
           <p className="text-text-secondary text-center py-8">No members yet</p>

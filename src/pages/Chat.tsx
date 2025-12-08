@@ -92,11 +92,11 @@ export default function Chat() {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-12rem)] animate-fade-in">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-12rem)] animate-fade-in">
       {/* Conversations List */}
       <Card className="overflow-hidden flex flex-col">
-        <h2 className="text-xl font-bold mb-4 flex items-center space-x-2">
-          <MessageSquare className="w-5 h-5 text-primary" />
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <MessageSquare className="w-5 h-5 text-primary flex-shrink-0" />
           <span>Conversations</span>
         </h2>
         <div className="flex-1 overflow-y-auto space-y-2">

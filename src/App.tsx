@@ -27,6 +27,7 @@ import GameReplay from './pages/GameReplay';
 import Groups from './pages/Groups';
 import GroupDetail from './pages/GroupDetail';
 import Activity from './pages/Activity';
+import Analysis from './pages/Analysis';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -107,6 +108,16 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <GameReplay />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/games/:gameId/analysis"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Analysis />
                 </Layout>
               </ProtectedRoute>
             }

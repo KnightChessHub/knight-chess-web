@@ -62,27 +62,27 @@ export default function Layout({ children }: LayoutProps) {
     <div className="min-h-screen bg-bg-primary">
       {/* Top Navigation */}
       <nav className="bg-bg-secondary border-b border-border sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ paddingLeft: '1rem', paddingRight: '1rem' }}>
-          <div className="flex items-center justify-between" style={{ height: '4rem', minHeight: '4rem' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 min-h-[4rem]">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2.5">
               <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
-                <span className="text-xl text-white font-bold leading-none">♔</span>
+                <span className="text-xl text-white font-bold leading-none">♘</span>
               </div>
               <span className="text-xl font-semibold text-text-primary tracking-tight leading-tight">KnightChess</span>
             </Link>
 
             {/* Navigation Links */}
-            <div className="hidden md:flex items-center space-x-1">
+            <div className="hidden md:flex items-center gap-1">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 return (
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all duration-200 ${
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
                       isActive(item.path)
-                        ? 'bg-primary text-white font-semibold'
+                        ? 'bg-primary text-white font-medium'
                         : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
                     }`}
                   >
@@ -170,7 +170,7 @@ export default function Layout({ children }: LayoutProps) {
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 md:pb-6" style={{ padding: '1.5rem 1rem', paddingBottom: '5rem' }}>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 md:pb-6">
         {children}
       </main>
     </div>

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { apiService } from '../services/api';
 import Card from '../components/Card';
 import Button from '../components/Button';
-import { Users, Check, X } from 'lucide-react';
+import { Users, Check, X, UserPlus, UserMinus, Ban } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import type { User, FriendRequest } from '../types';
 
@@ -50,6 +50,26 @@ export default function Friends() {
     }
   };
 
+  const handleRemoveFriend = async (friendId: string) => {
+    try {
+      await apiService.removeFriend(friendId);
+      toast.success('Friend removed');
+      loadData();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Failed to remove friend');
+    }
+  };
+
+  const handleBlockUser = async (userId: string) => {
+    try {
+      await apiService.blockUser(userId);
+      toast.success('User blocked');
+      loadData();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Failed to block user');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -60,9 +80,9 @@ export default function Friends() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-semibold mb-2 flex items-center gap-3">
-          <Users className="w-6 h-6 text-primary flex-shrink-0" />
+      <div className="mb-4">
+        <h1 className="text-2xl font-semibold mb-1 flex items-center gap-2">
+          <Users className="w-5 h-5 text-primary flex-shrink-0" />
           <span>Friends</span>
         </h1>
         <p className="text-text-secondary">Manage your friends and connections</p>
@@ -71,14 +91,14 @@ export default function Friends() {
       {/* Friend Requests */}
       {requests.length > 0 && (
         <Card>
-          <h2 className="text-xl font-bold mb-4">Friend Requests</h2>
-          <div className="space-y-3">
+          <h2 className="text-lg font-semibold mb-4">Friend Requests</h2>
+          <div className="space-y-4">
             {requests.map((request) => (
               <div
                 key={request._id}
                 className="flex items-center justify-between p-4 bg-bg-tertiary rounded-lg"
               >
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-semibold">
                     {request.fromUsername?.[0]?.toUpperCase() || 'U'}
                   </div>
@@ -93,6 +113,7 @@ export default function Friends() {
                     size="sm"
                     onClick={() => handleAccept(request._id)}
                     className="min-w-[2.5rem]"
+                    title="Accept"
                   >
                     <Check className="w-4 h-4" />
                   </Button>
@@ -101,6 +122,7 @@ export default function Friends() {
                     size="sm"
                     onClick={() => handleReject(request._id)}
                     className="min-w-[2.5rem]"
+                    title="Reject"
                   >
                     <X className="w-4 h-4" />
                   </Button>
@@ -113,7 +135,7 @@ export default function Friends() {
 
       {/* Friends List */}
       <Card>
-        <h2 className="text-xl font-bold mb-4">Your Friends ({friends.length})</h2>
+        <h2 className="text-lg font-semibold mb-4">Your Friends ({friends.length})</h2>
         {friends.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-text-secondary mb-4">No friends yet</p>
@@ -126,15 +148,28 @@ export default function Friends() {
                 key={friend._id}
                 className="p-4 bg-bg-tertiary rounded-lg hover:bg-bg-hover transition-colors"
               >
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-semibold">
-                    {friend.username[0]?.toUpperCase() || 'U'}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-semibold">
+                      {friend.username[0]?.toUpperCase() || 'U'}
+                    </div>
+                    <div>
+                      <p className="font-semibold">{friend.username}</p>
+                      <p className="text-text-secondary text-sm">
+                        Rating: {friend.rating || 1200}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-semibold">{friend.username}</p>
-                    <p className="text-text-secondary text-sm">
-                      Rating: {friend.rating || 1200}
-                    </p>
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="sm" title="Challenge to game">
+                      <UserPlus className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleRemoveFriend(friend._id)} title="Remove friend">
+                      <UserMinus className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleBlockUser(friend._id)} title="Block user">
+                      <Ban className="w-4 h-4" />
+                    </Button>
                   </div>
                 </div>
               </div>

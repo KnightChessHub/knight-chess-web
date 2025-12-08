@@ -267,8 +267,26 @@ class ApiService {
     return data.group;
   }
 
+  async updateGroup(groupId: string, updates: Partial<Group>): Promise<Group> {
+    const { data } = await this.api.put<{ group: Group }>(`/groups/${groupId}`, updates);
+    return data.group;
+  }
+
+  async deleteGroup(groupId: string): Promise<void> {
+    await this.api.delete(`/groups/${groupId}`);
+  }
+
   async addGroupMember(groupId: string, userId: string): Promise<void> {
     await this.api.post(`/groups/${groupId}/members`, { userId });
+  }
+
+  async removeGroupMember(groupId: string, userId: string): Promise<void> {
+    await this.api.delete(`/groups/${groupId}/members/${userId}`);
+  }
+
+  async getGroupMembers(groupId: string): Promise<User[]> {
+    const { data } = await this.api.get<{ members: User[] }>(`/groups/${groupId}/members`);
+    return data.members;
   }
 
   // Search
@@ -295,6 +313,139 @@ class ApiService {
   async getMyActivity(): Promise<any[]> {
     const { data } = await this.api.get<{ activities: any[] }>('/activity/my');
     return data.activities;
+  }
+
+  async getUserActivity(userId: string, params?: { limit?: number }): Promise<any[]> {
+    const { data } = await this.api.get<{ activities: any[] }>(`/activity/user/${userId}`, { params });
+    return data.activities;
+  }
+
+  // Game Replay
+  async getReplay(gameId: string): Promise<Game> {
+    const { data } = await this.api.get<{ replay: Game }>(`/replay/${gameId}`);
+    return data.replay;
+  }
+
+  // Analysis
+  async analyzeGame(gameId: string, analysisData: any): Promise<any> {
+    const { data } = await this.api.post('/analysis/analyze', { gameId, ...analysisData });
+    return data;
+  }
+
+  async getGameAnalysis(gameId: string): Promise<any> {
+    const { data } = await this.api.get(`/analysis/${gameId}`);
+    return data;
+  }
+
+  async getMyAnalyses(): Promise<any[]> {
+    const { data } = await this.api.get<{ analyses: any[] }>('/analysis/my');
+    return data.analyses;
+  }
+
+  // Files
+  async uploadFile(file: File, metadata?: any): Promise<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (metadata) {
+      formData.append('metadata', JSON.stringify(metadata));
+    }
+    const { data } = await this.api.post('/files', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return data;
+  }
+
+  async getMyFiles(params?: { limit?: number }): Promise<any[]> {
+    const { data } = await this.api.get<{ files: any[] }>('/files/my', { params });
+    return data.files;
+  }
+
+  async getFile(fileId: string): Promise<any> {
+    const { data } = await this.api.get(`/files/${fileId}`);
+    return data;
+  }
+
+  async deleteFile(fileId: string): Promise<void> {
+    await this.api.delete(`/files/${fileId}`);
+  }
+
+  // Reports
+  async createReport(report: { type: string; targetId: string; reason: string; description?: string }): Promise<any> {
+    const { data } = await this.api.post('/reports', report);
+    return data;
+  }
+
+  async getMyReports(): Promise<any[]> {
+    const { data } = await this.api.get<{ reports: any[] }>('/reports/my');
+    return data.reports;
+  }
+
+  async getReports(params?: { status?: string }): Promise<any[]> {
+    const { data } = await this.api.get<{ reports: any[] }>('/reports', { params });
+    return data.reports;
+  }
+
+  async updateReportStatus(reportId: string, status: string): Promise<void> {
+    await this.api.put(`/reports/${reportId}/status`, { status });
+  }
+
+  // Timers
+  async getGameTimer(gameId: string): Promise<any> {
+    const { data } = await this.api.get(`/timers/${gameId}`);
+    return data;
+  }
+
+  async startTimer(gameId: string): Promise<void> {
+    await this.api.post(`/timers/${gameId}/start`);
+  }
+
+  async stopTimer(gameId: string): Promise<void> {
+    await this.api.post(`/timers/${gameId}/stop`);
+  }
+
+  async pauseTimer(gameId: string): Promise<void> {
+    await this.api.post(`/timers/${gameId}/pause`);
+  }
+
+  // Tournaments
+  async startTournament(tournamentId: string): Promise<Tournament> {
+    const { data } = await this.api.post<{ tournament: Tournament }>(`/tournaments/${tournamentId}/start`);
+    return data.tournament;
+  }
+
+  async getMyTournaments(): Promise<Tournament[]> {
+    const { data } = await this.api.get<{ tournaments: Tournament[] }>('/tournaments/my');
+    return data.tournaments;
+  }
+
+  // Friends
+  async removeFriend(friendId: string): Promise<void> {
+    await this.api.delete(`/friends/${friendId}`);
+  }
+
+  async blockUser(userId: string): Promise<void> {
+    await this.api.post(`/friends/block/${userId}`);
+  }
+
+  // Chat
+  async getChatUnreadCount(): Promise<number> {
+    const { data } = await this.api.get<{ count: number }>('/chat/unread/count');
+    return data.count;
+  }
+
+  async markChatMessageRead(messageId: string): Promise<void> {
+    await this.api.put(`/chat/${messageId}/read`);
+  }
+
+  // Statistics
+  async getGlobalStatistics(): Promise<any> {
+    const { data } = await this.api.get('/statistics/global');
+    return data;
+  }
+
+  // Ratings
+  async recordRating(ratingData: { gameId: string; whiteRating: number; blackRating: number; result: string }): Promise<void> {
+    await this.api.post('/ratings/record', ratingData);
   }
 }
 

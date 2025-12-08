@@ -47,8 +47,8 @@ export default function Settings() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold mb-2 flex items-center space-x-2">
-          <SettingsIcon className="w-8 h-8 text-primary" />
+        <h1 className="text-2xl font-semibold mb-1 flex items-center gap-2">
+          <SettingsIcon className="w-5 h-5 text-primary flex-shrink-0" />
           <span>Settings</span>
         </h1>
         <p className="text-text-secondary">Manage your account and preferences</p>
@@ -65,7 +65,7 @@ export default function Settings() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                       activeTab === tab.id
                         ? 'bg-primary text-white'
                         : 'text-text-secondary hover:bg-bg-hover'

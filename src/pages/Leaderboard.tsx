@@ -41,9 +41,9 @@ export default function Leaderboard() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-bold mb-2 flex items-center space-x-2">
-          <Trophy className="w-8 h-8 text-text-secondary" />
+      <div className="mb-4">
+        <h1 className="text-2xl font-semibold mb-1 flex items-center gap-2">
+          <Trophy className="w-5 h-5 text-primary flex-shrink-0" />
           <span>Leaderboard</span>
         </h1>
         <p className="text-text-secondary">Top players in each category</p>
@@ -51,7 +51,7 @@ export default function Leaderboard() {
 
       {/* Category Filter */}
       <Card>
-        <div className="flex space-x-2">
+        <div className="flex gap-3">
           {['blitz', 'rapid', 'classical', 'bullet'].map((cat) => (
             <button
               key={cat}
@@ -70,7 +70,7 @@ export default function Leaderboard() {
 
       {/* Leaderboard */}
       <Card>
-        <div className="space-y-2">
+        <div className="space-y-3">
           {leaderboard.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-text-secondary">No players yet</p>
@@ -82,13 +82,13 @@ export default function Leaderboard() {
               return (
                 <div
                   key={rating.userId}
-                  className={`flex items-center justify-between p-4 rounded-lg transition-all ${
+                  className={`flex items-center justify-between p-5 rounded-lg transition-all ${
                     rank <= 3
                       ? 'bg-bg-tertiary border border-border'
                       : 'bg-bg-tertiary hover:bg-bg-hover'
                   }`}
                 >
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center gap-4">
                     <div className="w-12 text-center">
                       {icon ? (
                         <span className="text-2xl">{icon}</span>

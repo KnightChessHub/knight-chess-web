@@ -30,21 +30,20 @@ export default function Button({
   };
 
   const sizes = {
-    sm: 'px-3 py-1.5 text-sm gap-1.5 min-h-[2rem]',
-    md: 'px-4 py-2.5 text-base gap-2 min-h-[2.5rem]',
-    lg: 'px-6 py-3 text-lg gap-2.5 min-h-[3rem]',
+    sm: 'px-4 py-2 text-sm gap-1.5 min-h-[2.25rem]',
+    md: 'px-5 py-2.5 text-base gap-2 min-h-[2.75rem]',
+    lg: 'px-6 py-3 text-lg gap-2.5 min-h-[3.25rem]',
   };
 
   return (
     <button
       className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
       disabled={disabled || isLoading}
-      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
       {...props}
     >
       {isLoading ? (
         <>
-          <Loader2 className="h-4 w-4 animate-spin" style={{ marginRight: '0.5rem' }} />
+          <Loader2 className="h-4 w-4 animate-spin mr-2" />
           Loading...
         </>
       ) : (

@@ -6,7 +6,7 @@ import { useAuthStore } from '../store/authStore';
 import ChessBoard from '../components/ChessBoard';
 import Card from '../components/Card';
 import Button from '../components/Button';
-import { ArrowLeft, Flag, Clock, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Flag, Clock, RotateCcw, BarChart3 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import type { Game } from '../types';
 import { useWebSocket } from '../hooks/useWebSocket';
@@ -116,25 +116,31 @@ export default function GamePage() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
           <Button variant="ghost" onClick={() => navigate('/games')} size="md">
             <ArrowLeft className="w-4 h-4" />
             Back
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">Chess Game</h1>
+            <h1 className="text-2xl font-semibold">Chess Game</h1>
             <p className="text-text-secondary">
               {game.status === 'active' ? 'In Progress' : game.status}
             </p>
           </div>
         </div>
-        <div className="flex space-x-2">
+        <div className="flex gap-2">
           {game.status === 'finished' && (
-            <Button variant="secondary" onClick={() => navigate(`/games/${game._id}/replay`)} size="md">
-              <RotateCcw className="w-4 h-4" />
-              Replay
-            </Button>
+            <>
+              <Button variant="secondary" onClick={() => navigate(`/games/${game._id}/replay`)} size="md">
+                <RotateCcw className="w-4 h-4" />
+                Replay
+              </Button>
+              <Button variant="ghost" onClick={() => navigate(`/games/${game._id}/analysis`)} size="md">
+                <BarChart3 className="w-4 h-4" />
+                Analyze
+              </Button>
+            </>
           )}
           {isPlayer && game.status === 'active' && (
             <Button variant="danger" onClick={handleResign} size="md">

@@ -71,9 +71,9 @@ export default function Games() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Games</h1>
+          <h1 className="text-2xl font-semibold mb-1">Games</h1>
           <p className="text-text-secondary">Play, watch, and analyze chess games</p>
         </div>
         <Button onClick={() => navigate('/games/new')} size="lg">
@@ -83,7 +83,7 @@ export default function Games() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-3">
         {(['all', 'active', 'waiting', 'finished'] as const).map((f) => (
           <Button
             key={f}
@@ -98,8 +98,8 @@ export default function Games() {
 
       {/* Quick Create */}
       <Card>
-        <h3 className="text-lg font-bold mb-4">Quick Create</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <h3 className="text-lg font-semibold mb-5">Quick Create</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: 'Bullet', initial: 60, increment: 0 },
             { label: 'Blitz', initial: 300, increment: 0 },

@@ -63,7 +63,7 @@ export default function GameReplay() {
   const loadGame = async () => {
     if (!id) return;
     try {
-      const gameData = await apiService.getGame(id);
+      const gameData = await apiService.getReplay(id);
       setGame(gameData);
     } catch (error) {
       toast.error('Failed to load game');

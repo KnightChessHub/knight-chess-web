@@ -66,10 +66,10 @@ export default function Groups() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-3xl font-semibold mb-2 flex items-center gap-3">
-            <Users className="w-6 h-6 text-primary flex-shrink-0" />
+          <h1 className="text-2xl font-semibold mb-1 flex items-center gap-2">
+            <Users className="w-5 h-5 text-primary flex-shrink-0" />
             <span>Groups</span>
           </h1>
           <p className="text-text-secondary">Create and manage chess groups</p>
@@ -100,7 +100,7 @@ export default function Groups() {
                 onChange={(e) => setGroupDescription(e.target.value)}
                 placeholder="Enter group description"
               />
-              <div className="flex space-x-2">
+              <div className="flex gap-3">
                 <Button type="submit" className="flex-1">
                   Create
                 </Button>
@@ -160,14 +160,14 @@ export default function Groups() {
                     )}
                   </div>
 
-                  <div className="flex items-center space-x-2 text-sm">
-                    <Users className="w-4 h-4 text-text-secondary" />
+                  <div className="flex items-center gap-2 text-sm">
+                    <Users className="w-4 h-4 text-text-secondary flex-shrink-0" />
                     <span className="text-text-secondary">
                       {group.members.length} member{group.members.length !== 1 ? 's' : ''}
                     </span>
                   </div>
 
-                  <div className="flex items-center space-x-2 pt-2">
+                  <div className="flex items-center gap-2 pt-3">
                     <Button
                       variant="primary"
                       size="sm"

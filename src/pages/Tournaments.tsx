@@ -49,10 +49,10 @@ export default function Tournaments() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-3xl font-semibold mb-2 flex items-center gap-3">
-            <Trophy className="w-6 h-6 text-primary flex-shrink-0" />
+          <h1 className="text-2xl font-semibold mb-1 flex items-center gap-2">
+            <Trophy className="w-5 h-5 text-primary flex-shrink-0" />
             <span>Tournaments</span>
           </h1>
           <p className="text-text-secondary">Compete in chess tournaments</p>
@@ -64,7 +64,7 @@ export default function Tournaments() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-3">
         {(['all', 'upcoming', 'active', 'finished'] as const).map((f) => (
           <Button
             key={f}
@@ -99,24 +99,24 @@ export default function Tournaments() {
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2 text-sm">
-                    <Users className="w-4 h-4 text-text-secondary" />
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Users className="w-4 h-4 text-text-secondary flex-shrink-0" />
                     <span className="text-text-secondary">
                       {tournament.participants.length} / {tournament.maxParticipants} players
                     </span>
                   </div>
 
-                  <div className="flex items-center space-x-2 text-sm">
-                    <Calendar className="w-4 h-4 text-text-secondary" />
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="w-4 h-4 text-text-secondary flex-shrink-0" />
                     <span className="text-text-secondary">
                       {new Date(tournament.startDate).toLocaleDateString()}
                     </span>
                   </div>
 
                   {tournament.prizePool && (
-                    <div className="flex items-center space-x-2 text-sm">
-                      <Trophy className="w-4 h-4 text-text-secondary" />
+                    <div className="flex items-center gap-2 text-sm">
+                      <Trophy className="w-4 h-4 text-text-secondary flex-shrink-0" />
                       <span className="text-text-secondary font-semibold">${tournament.prizePool} Prize Pool</span>
                     </div>
                   )}
