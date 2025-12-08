@@ -108,7 +108,7 @@ export default function Layout({ children }: LayoutProps) {
       {/* Top Navigation */}
       <nav className="glass-nav sticky top-0 z-50" style={{ position: 'relative', zIndex: 50 }}>
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8" style={{ position: 'relative' }}>
-          <div className="flex items-center justify-between h-16 min-h-[4rem] gap-2" style={{ position: 'relative' }}>
+          <div className="flex items-center justify-between gap-2" style={{ position: 'relative', height: '4rem', minHeight: '4rem' }}>
             {/* Logo */}
             <Link 
               to="/" 
@@ -129,14 +129,15 @@ export default function Layout({ children }: LayoutProps) {
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`flex items-center gap-2 px-3 xl:px-4 py-2 rounded-xl transition-all duration-300 font-medium whitespace-nowrap flex-shrink-0 ${
+                    className={`flex items-center gap-2 rounded-xl transition-all duration-300 font-medium whitespace-nowrap flex-shrink-0 ${
                       isActive(item.path)
                         ? 'bg-primary text-white shadow-lg shadow-primary/30'
                         : 'text-text-secondary hover:glass-light hover:text-text-primary hover:scale-105'
                     }`}
+                    style={{ height: '2.5rem', minHeight: '2.5rem', display: 'flex', alignItems: 'center', paddingLeft: '1rem', paddingRight: '1rem' }}
                   >
-                    <Icon className="w-4 h-4 flex-shrink-0" />
-                    <span className="font-medium text-sm xl:text-base">{item.label}</span>
+                    <Icon className="w-4 h-4 flex-shrink-0" style={{ width: '1rem', height: '1rem' }} />
+                    <span className="font-medium text-sm">{item.label}</span>
                   </Link>
                 );
               })}
@@ -151,14 +152,15 @@ export default function Layout({ children }: LayoutProps) {
                     e.preventDefault();
                     setMoreMenuOpen(!moreMenuOpen);
                   }}
-                  className={`flex items-center gap-2 px-3 xl:px-4 py-2 rounded-xl transition-all duration-300 font-medium whitespace-nowrap ${
+                  className={`flex items-center gap-2 rounded-xl transition-all duration-300 font-medium whitespace-nowrap ${
                     moreNavItems.some(item => isActive(item.path))
                       ? 'bg-primary text-white shadow-lg shadow-primary/30'
                       : 'text-text-secondary hover:glass-light hover:text-text-primary hover:scale-105'
                   } ${moreMenuOpen ? 'bg-primary text-white' : ''}`}
+                  style={{ height: '2.5rem', minHeight: '2.5rem', display: 'flex', alignItems: 'center', paddingLeft: '1rem', paddingRight: '1rem' }}
                 >
-                  <span className="font-medium text-sm xl:text-base">More</span>
-                  <ChevronDown className={`w-4 h-4 flex-shrink-0 transition-transform duration-300 ${moreMenuOpen ? 'rotate-180' : ''}`} />
+                  <span className="font-medium text-sm">More</span>
+                  <ChevronDown className={`flex-shrink-0 transition-transform duration-300 ${moreMenuOpen ? 'rotate-180' : ''}`} style={{ width: '1rem', height: '1rem' }} />
                 </button>
               </div>
             </div>
@@ -167,18 +169,20 @@ export default function Layout({ children }: LayoutProps) {
             <div className="hidden lg:flex items-center gap-2 flex-shrink-0">
               <Link
                 to="/search"
-                className="p-2 text-text-secondary hover:text-text-primary hover:glass-light rounded-lg transition-colors flex items-center justify-center flex-shrink-0"
+                className="text-text-secondary hover:text-text-primary hover:glass-light rounded-lg transition-colors flex items-center justify-center flex-shrink-0"
                 title="Search"
+                style={{ width: '2.5rem', height: '2.5rem', minHeight: '2.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
-                <Search className="w-5 h-5" />
+                <Search style={{ width: '1.25rem', height: '1.25rem' }} />
               </Link>
 
               <Link
                 to="/notifications"
-                className="relative p-2 text-text-secondary hover:text-text-primary hover:bg-bg-hover rounded-lg transition-colors flex items-center justify-center flex-shrink-0"
+                className="relative text-text-secondary hover:text-text-primary hover:bg-bg-hover rounded-lg transition-colors flex items-center justify-center flex-shrink-0"
                 title="Notifications"
+                style={{ width: '2.5rem', height: '2.5rem', minHeight: '2.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
-                <Bell className="w-5 h-5" />
+                <Bell style={{ width: '1.25rem', height: '1.25rem' }} />
                 {unreadCount > 0 && (
                   <span className="absolute top-1 right-1 w-5 h-5 bg-danger rounded-full flex items-center justify-center text-xs font-bold text-white">
                     {unreadCount > 9 ? '9+' : unreadCount}
@@ -188,9 +192,10 @@ export default function Layout({ children }: LayoutProps) {
 
               <Link
                 to="/profile"
-                className="flex items-center gap-2 xl:gap-3 px-3 xl:px-4 py-2 glass-light hover:glass rounded-xl transition-all duration-300 hover:scale-105 flex-shrink-0"
+                className="flex items-center gap-2 glass-light hover:glass rounded-xl transition-all duration-300 hover:scale-105 flex-shrink-0"
+                style={{ height: '2.5rem', minHeight: '2.5rem', display: 'flex', alignItems: 'center', paddingLeft: '0.75rem', paddingRight: '0.75rem' }}
               >
-                <div className="w-8 h-8 xl:w-9 xl:h-9 bg-primary rounded-full flex items-center justify-center text-xs xl:text-sm font-bold text-white flex-shrink-0 shadow-lg shadow-primary/30">
+                <div className="bg-primary rounded-full flex items-center justify-center font-bold text-white flex-shrink-0 shadow-lg shadow-primary/30" style={{ width: '1.5rem', height: '1.5rem', fontSize: '0.65rem' }}>
                   {(user?.username || 'U')[0]?.toUpperCase() || 'U'}
                 </div>
                 <span className="hidden xl:block text-text-primary font-semibold text-sm truncate max-w-[100px]">{user?.username}</span>
@@ -198,18 +203,20 @@ export default function Layout({ children }: LayoutProps) {
 
               <Link
                 to="/settings"
-                className="p-2 text-text-secondary hover:text-text-primary hover:glass-light rounded-lg transition-colors flex items-center justify-center flex-shrink-0"
+                className="text-text-secondary hover:text-text-primary hover:glass-light rounded-lg transition-colors flex items-center justify-center flex-shrink-0"
                 title="Settings"
+                style={{ width: '2.5rem', height: '2.5rem', minHeight: '2.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
-                <Settings className="w-5 h-5" />
+                <Settings style={{ width: '1.25rem', height: '1.25rem' }} />
               </Link>
 
               <button
                 onClick={logout}
-                className="p-2 text-text-secondary hover:text-danger hover:bg-bg-hover rounded-lg transition-colors flex items-center justify-center flex-shrink-0"
+                className="text-text-secondary hover:text-danger hover:bg-bg-hover rounded-lg transition-colors flex items-center justify-center flex-shrink-0"
                 title="Logout"
+                style={{ width: '2.5rem', height: '2.5rem', minHeight: '2.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
-                <LogOut className="w-5 h-5" />
+                <LogOut style={{ width: '1.25rem', height: '1.25rem' }} />
               </button>
             </div>
 
@@ -305,7 +312,7 @@ export default function Layout({ children }: LayoutProps) {
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center gap-3 px-4 py-3 glass-light hover:glass rounded-xl transition-all duration-300 mx-2"
                   >
-                    <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0 shadow-lg shadow-primary/30">
+                    <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 shadow-lg shadow-primary/30">
                       {(user?.username || 'U')[0]?.toUpperCase() || 'U'}
                     </div>
                     <div className="flex-1 min-w-0">
