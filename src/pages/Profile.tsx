@@ -267,7 +267,7 @@ export default function Profile() {
                         vs {isWhite ? game.blackPlayerUsername || 'Opponent' : game.whitePlayerUsername || 'Opponent'}
                       </p>
                       <p className="text-text-secondary text-sm">
-                        {new Date(game.createdAt).toLocaleDateString()} • {game.moves.length} moves
+                        {new Date(game.createdAt).toLocaleDateString()} • {(game.moves || []).length} moves
                       </p>
                     </div>
                     <div className="text-right">

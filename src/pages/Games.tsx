@@ -23,9 +23,10 @@ export default function Games() {
     try {
       const params = filter !== 'all' ? { status: filter } : {};
       const gamesData = await apiService.getGames(params);
-      setGames(gamesData);
+      setGames(Array.isArray(gamesData) ? gamesData : []);
     } catch (error) {
       toast.error('Failed to load games');
+      setGames([]);
     } finally {
       setIsLoading(false);
     }

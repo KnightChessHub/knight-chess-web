@@ -132,34 +132,62 @@ class ApiService {
   // Games
   async createGame(timeControl: { initial: number; increment: number }): Promise<Game> {
     const { data } = await this.api.post<{ success: boolean; data: { game: Game } } | { game: Game }>('/games', { timeControl });
+    let game: Game;
     if ('data' in data && data.data) {
-      return data.data.game;
+      game = data.data.game;
+    } else {
+      game = (data as { game: Game }).game;
     }
-    return (data as { game: Game }).game;
+    // Ensure moves array exists
+    if (!game.moves) {
+      game.moves = [];
+    }
+    return game;
   }
 
   async getGames(params?: { status?: string; limit?: number }): Promise<Game[]> {
     const { data } = await this.api.get<{ success: boolean; data: { games: Game[] } } | { games: Game[] }>('/games', { params });
+    let games: Game[];
     if ('data' in data && data.data) {
-      return data.data.games;
+      games = data.data.games || [];
+    } else {
+      games = (data as { games: Game[] }).games || [];
     }
-    return (data as { games: Game[] }).games || [];
+    // Ensure all games have moves array
+    return games.map(game => ({
+      ...game,
+      moves: game.moves || []
+    }));
   }
 
   async getGame(gameId: string): Promise<Game> {
     const { data } = await this.api.get<{ success: boolean; data: { game: Game } } | { game: Game }>(`/games/${gameId}`);
+    let game: Game;
     if ('data' in data && data.data) {
-      return data.data.game;
+      game = data.data.game;
+    } else {
+      game = (data as { game: Game }).game;
     }
-    return (data as { game: Game }).game;
+    // Ensure moves array exists
+    if (!game.moves) {
+      game.moves = [];
+    }
+    return game;
   }
 
   async makeMove(gameId: string, move: string): Promise<Game> {
     const { data } = await this.api.post<{ success: boolean; data: { game: Game } } | { game: Game }>(`/games/${gameId}/move`, { move });
+    let game: Game;
     if ('data' in data && data.data) {
-      return data.data.game;
+      game = data.data.game;
+    } else {
+      game = (data as { game: Game }).game;
     }
-    return (data as { game: Game }).game;
+    // Ensure moves array exists
+    if (!game.moves) {
+      game.moves = [];
+    }
+    return game;
   }
 
   async joinGame(gameId: string): Promise<Game> {
@@ -191,7 +219,12 @@ class ApiService {
 
   async getTournament(tournamentId: string): Promise<Tournament> {
     const { data } = await this.api.get(`/tournaments/${tournamentId}`);
-    return this.normalizeResponse<Tournament>(data, 'tournament');
+    const tournament = this.normalizeResponse<Tournament>(data, 'tournament');
+    // Ensure participants array exists
+    if (!tournament.participants) {
+      tournament.participants = [];
+    }
+    return tournament;
   }
 
   async joinTournament(tournamentId: string): Promise<Tournament> {
@@ -320,7 +353,12 @@ class ApiService {
 
   async getGroup(groupId: string): Promise<Group> {
     const { data } = await this.api.get(`/groups/${groupId}`);
-    return this.normalizeResponse<Group>(data, 'group');
+    const group = this.normalizeResponse<Group>(data, 'group');
+    // Ensure members array exists
+    if (!group.members) {
+      group.members = [];
+    }
+    return group;
   }
 
   async updateGroup(groupId: string, updates: Partial<Group>): Promise<Group> {

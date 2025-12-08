@@ -27,7 +27,7 @@ export default function Dashboard() {
 
         setStatistics(stats);
         setRating(userRating);
-        setUpcomingTournaments(tournaments.slice(0, 3));
+        setUpcomingTournaments(Array.isArray(tournaments) ? tournaments.slice(0, 3) : []);
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
       } finally {
@@ -202,7 +202,7 @@ export default function Dashboard() {
                   <div>
                     <h3 className="font-semibold text-lg">{tournament.name}</h3>
                     <p className="text-text-secondary text-sm">
-                      {tournament.participants.length} / {tournament.maxParticipants} participants
+                      {(tournament.participants || []).length} / {tournament.maxParticipants} participants
                     </p>
                   </div>
                   <Button

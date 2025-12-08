@@ -44,9 +44,10 @@ export default function GamePage() {
     if (game) {
       const isWhite = game.whitePlayer === user?._id;
       setOrientation(isWhite ? 'white' : 'black');
+      const moves = game.moves || [];
       setIsMyTurn(
         game.status === 'active' &&
-          ((game.moves.length % 2 === 0 && isWhite) || (game.moves.length % 2 === 1 && !isWhite))
+          ((moves.length % 2 === 0 && isWhite) || (moves.length % 2 === 1 && !isWhite))
       );
     }
   }, [game, user]);
@@ -164,11 +165,11 @@ export default function GamePage() {
           </div>
 
           {/* Move History */}
-          {game.moves.length > 0 && (
+          {(game.moves || []).length > 0 && (
             <Card className="w-full">
               <h3 className="text-lg font-bold mb-4">Move History</h3>
               <div className="max-h-64 overflow-y-auto space-y-1">
-                {game.moves.map((move, index) => (
+                {(game.moves || []).map((move, index) => (
                   <div
                     key={index}
                     className="flex items-center justify-between p-2 bg-bg-tertiary rounded hover:bg-bg-hover"

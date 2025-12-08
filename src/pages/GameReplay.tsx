@@ -26,11 +26,11 @@ export default function GameReplay() {
   }, [id]);
 
   useEffect(() => {
-    if (game && game.moves.length > 0) {
+    if (game && (game.moves || []).length > 0) {
       const chess = new Chess();
       const history: string[] = [chess.fen()];
       
-      for (const move of game.moves) {
+      for (const move of (game.moves || [])) {
         try {
           chess.move(move);
           history.push(chess.fen());
@@ -265,7 +265,7 @@ export default function GameReplay() {
               </div>
               <div className="flex justify-between">
                 <span className="text-text-secondary">Total Moves</span>
-                <span className="font-semibold">{game.moves.length}</span>
+                <span className="font-semibold">{(game.moves || []).length}</span>
               </div>
             </div>
           </Card>

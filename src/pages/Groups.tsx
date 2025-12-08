@@ -162,9 +162,9 @@ export default function Groups() {
 
                   <div className="flex items-center gap-2 text-sm">
                     <Users className="w-4 h-4 text-text-secondary flex-shrink-0" />
-                    <span className="text-text-secondary">
-                      {group.members.length} member{group.members.length !== 1 ? 's' : ''}
-                    </span>
+                         <span className="text-text-secondary">
+                           {(group.members || []).length} member{(group.members || []).length !== 1 ? 's' : ''}
+                         </span>
                   </div>
 
                   <div className="flex items-center gap-2 pt-3">

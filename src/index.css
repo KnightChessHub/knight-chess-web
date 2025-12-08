@@ -45,8 +45,9 @@
   --color-border-lighter: #4a4a4a;
   --color-border-primary: rgba(5, 150, 105, 0.2);
 
-  /* Font Family */
+  /* Font Family - Spectral */
   --font-family-sans: 'Spectral', system-ui, serif;
+  --font-sans: 'Spectral', system-ui, serif;
 }
 
 /* Custom utility classes */

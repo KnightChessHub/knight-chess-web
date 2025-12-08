@@ -103,7 +103,7 @@ export default function Tournaments() {
                   <div className="flex items-center gap-2 text-sm">
                     <Users className="w-4 h-4 text-text-secondary flex-shrink-0" />
                     <span className="text-text-secondary">
-                      {tournament.participants.length} / {tournament.maxParticipants} players
+                      {(tournament.participants || []).length} / {tournament.maxParticipants} players
                     </span>
                   </div>
 

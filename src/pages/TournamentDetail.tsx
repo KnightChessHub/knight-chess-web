@@ -230,11 +230,11 @@ export default function TournamentDetail() {
       )}
 
       {/* Participants List */}
-      {tournament.participants.length > 0 && (
+      {(tournament.participants || []).length > 0 && (
         <Card>
           <h2 className="text-xl font-bold mb-4">Participants</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {tournament.participants.map((participantId, index) => (
+            {(tournament.participants || []).map((participantId, index) => (
               <div
                 key={participantId}
                 className="p-3 bg-bg-tertiary rounded-lg hover:bg-bg-hover transition-colors"
