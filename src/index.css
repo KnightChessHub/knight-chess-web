@@ -218,6 +218,36 @@
   animation: glow 3s ease-in-out infinite;
 }
 
+/* Chess Loader Animation */
+@keyframes kingMove {
+  0% {
+    transform: translate(-24px, -24px);
+  }
+  25% {
+    transform: translate(24px, -24px);
+  }
+  50% {
+    transform: translate(24px, 24px);
+  }
+  75% {
+    transform: translate(-24px, 24px);
+  }
+  100% {
+    transform: translate(-24px, -24px);
+  }
+}
+
+.chess-king-move {
+  animation: kingMove 2s ease-in-out infinite;
+}
+
+/* Backdrop Blur for Loader */
+.glass-backdrop {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
 /* Glassmorphism Utilities */
 .glass {
   background: rgba(31, 31, 31, 0.75);

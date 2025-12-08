@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api';
 import Card from '../components/Card';
 import Button from '../components/Button';
+import ChessLoader from '../components/ChessLoader';
 import { Plus, Play, Clock, Users } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import type { Game } from '../types';
@@ -89,11 +90,7 @@ export default function Games() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <ChessLoader />;
   }
 
   return (
@@ -345,11 +342,27 @@ export default function Games() {
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-sm">
                       <Users className="w-4 h-4 text-text-secondary flex-shrink-0" />
-                      <span className="text-text-secondary">vs</span>
-                      <span className="font-medium truncate">
-                        {game.whitePlayerUsername || 'White'}
-                        {game.blackPlayer ? ` vs ${game.blackPlayerUsername || 'Black'}` : ' (Waiting for player)'}
-                      </span>
+                      {isPlayer ? (
+                        <>
+                          <span className="font-semibold text-text-primary truncate">
+                            {isWhitePlayer ? user?.username || 'You' : game.whitePlayerUsername || 'White Player'}
+                          </span>
+                          <span className="text-text-secondary">vs</span>
+                          <span className="font-semibold text-text-primary truncate">
+                            {isWhitePlayer ? (game.blackPlayerUsername || 'Waiting...') : (user?.username || 'You')}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="font-semibold text-text-primary truncate">
+                            {game.whitePlayerUsername || 'White Player'}
+                          </span>
+                          <span className="text-text-secondary">vs</span>
+                          <span className="font-semibold text-text-primary truncate">
+                            {game.blackPlayer ? (game.blackPlayerUsername || 'Black Player') : 'Waiting for player...'}
+                          </span>
+                        </>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-2 text-sm">

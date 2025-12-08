@@ -4,6 +4,7 @@ import { useAuthStore } from '../store/authStore';
 import { apiService } from '../services/api';
 import Card from '../components/Card';
 import Button from '../components/Button';
+import ChessLoader from '../components/ChessLoader';
 import {
   Trophy,
   TrendingUp,
@@ -145,11 +146,7 @@ export default function Dashboard() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <ChessLoader />;
   }
 
   return (
@@ -331,35 +328,41 @@ export default function Dashboard() {
               <div className="space-y-3">
                 {activeGames.map((game) => {
                   const isWhite = game.whitePlayer === user?._id;
+                  const myUsername = user?.username || 'You';
                   const opponent = isWhite
                     ? game.blackPlayerUsername
                     : game.whitePlayerUsername;
                   return (
                     <div
                       key={game._id}
-                      className="p-4 bg-bg-tertiary rounded-xl hover:bg-bg-hover transition-colors cursor-pointer border border-border hover:border-primary/30"
+                      className="glass-light rounded-lg p-3 hover:glass transition-all cursor-pointer border border-border/50 hover:border-primary/40"
                       onClick={() => navigate(`/games/${game._id}`)}
                     >
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-3">
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs font-semibold px-2 py-1 rounded bg-primary-light text-primary">
-                              {isWhite ? 'White' : 'Black'}
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="font-bold text-text-primary text-sm truncate">
+                              {myUsername}
                             </span>
                             <span className="text-text-secondary text-sm">vs</span>
-                            <span className="font-semibold text-text-primary truncate">
+                            <span className="font-bold text-text-primary truncate text-sm">
                               {opponent || 'Opponent'}
                             </span>
-                          </div>
-                          <div className="flex items-center gap-3 text-sm text-text-secondary">
-                            <Clock className="w-4 h-4" />
-                            <span>
-                              {game.timeControl
-                                ? `${formatTime(game.timeControl.initial)} + ${game.timeControl.increment}s`
-                                : 'N/A'}
+                            <span className="text-xs font-bold px-2 py-1 rounded-md bg-primary/20 text-primary border border-primary/30">
+                              {isWhite ? 'White' : 'Black'}
                             </span>
+                          </div>
+                          <div className="flex items-center gap-3 text-xs text-text-secondary">
+                            <div className="flex items-center gap-1.5">
+                              <Clock className="w-3.5 h-3.5 text-primary" />
+                              <span>
+                                {game.timeControl
+                                  ? `${formatTime(game.timeControl.initial)} + ${game.timeControl.increment}s`
+                                  : 'N/A'}
+                              </span>
+                            </div>
                             <span className="text-text-tertiary">•</span>
-                            <span>{(game.moves || []).length} moves</span>
+                            <span className="font-medium">{(game.moves || []).length} moves</span>
                           </div>
                         </div>
                         <Button
@@ -429,31 +432,34 @@ export default function Dashboard() {
                   return (
                     <div
                       key={game._id}
-                      className="p-4 bg-bg-tertiary rounded-xl hover:bg-bg-hover transition-colors cursor-pointer border border-border hover:border-primary/30"
+                      className="glass-light rounded-lg p-3 hover:glass transition-all cursor-pointer border border-border/50 hover:border-primary/40"
                       onClick={() => navigate(`/games/${game._id}`)}
                     >
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-3">
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <div className="flex items-center gap-2 mb-2 flex-wrap">
                             {isPlayer && opponent && (
                               <>
-                                <span className="font-semibold text-text-primary">
-                                  {isWhite ? 'White' : 'Black'}
+                                <span className="font-bold text-text-primary text-sm truncate">
+                                  {myUsername}
                                 </span>
-                                <span className="text-text-secondary">vs</span>
-                                <span className="font-semibold text-text-primary truncate">
+                                <span className="text-text-secondary text-sm">vs</span>
+                                <span className="font-bold text-text-primary truncate text-sm">
                                   {opponent}
+                                </span>
+                                <span className="text-xs font-bold px-2 py-1 rounded-md bg-primary/20 text-primary border border-primary/30">
+                                  {isWhite ? 'White' : 'Black'}
                                 </span>
                               </>
                             )}
                             {!isPlayer && (
                               <>
-                                <span className="font-semibold text-text-primary truncate">
-                                  {game.whitePlayerUsername || 'White'}
+                                <span className="font-bold text-text-primary truncate text-sm">
+                                  {game.whitePlayerUsername || 'White Player'}
                                 </span>
-                                <span className="text-text-secondary">vs</span>
-                                <span className="font-semibold text-text-primary truncate">
-                                  {game.blackPlayerUsername || 'Black'}
+                                <span className="text-text-secondary text-sm">vs</span>
+                                <span className="font-bold text-text-primary truncate text-sm">
+                                  {game.blackPlayerUsername || 'Black Player'}
                                 </span>
                               </>
                             )}
