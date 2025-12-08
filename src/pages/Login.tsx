@@ -46,7 +46,7 @@ export default function Login() {
         </div>
 
         {/* Login Form */}
-        <div className="bg-bg-card border border-border rounded-xl" style={{ padding: '2rem' }}>
+        <div className="glass-form rounded-xl" style={{ padding: '2rem' }}>
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <div>
               <Input

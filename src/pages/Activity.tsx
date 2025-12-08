@@ -27,35 +27,39 @@ export default function Activity() {
 
   const loadActivity = async () => {
     try {
-      // Since we don't have a direct activity endpoint, we'll simulate it
-      // In a real app, this would come from the activity service
-      const [games, tournaments] = await Promise.all([
-        apiService.getGames({ limit: 10 }).catch(() => []),
-        apiService.getTournaments({ status: 'active' }).catch(() => []),
-      ]);
-
-      const activityItems: ActivityItem[] = [
-        ...games.slice(0, 5).map((game) => ({
-          _id: game._id,
-          type: 'game' as const,
-          title: 'Game Completed',
-          description: `${game.whitePlayerUsername} vs ${game.blackPlayerUsername}`,
-          link: `/games/${game._id}`,
-          createdAt: game.updatedAt,
-        })),
-        ...tournaments.slice(0, 3).map((tournament) => ({
-          _id: tournament._id,
-          type: 'tournament' as const,
-          title: 'Tournament Started',
-          description: tournament.name,
-          link: `/tournaments/${tournament._id}`,
-          createdAt: tournament.startDate,
-        })),
-      ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-      setActivities(activityItems);
+      const data = await apiService.getActivityFeed();
+      setActivities(data);
     } catch (error) {
-      toast.error('Failed to load activity');
+      // Fallback to simulated data if API fails
+      try {
+        const [games, tournaments] = await Promise.all([
+          apiService.getGames({ limit: 10 }).catch(() => []),
+          apiService.getTournaments({ status: 'active' }).catch(() => []),
+        ]);
+
+        const activityItems: ActivityItem[] = [
+          ...games.slice(0, 5).map((game) => ({
+            _id: game._id,
+            type: 'game' as const,
+            title: 'Game Completed',
+            description: `${game.whitePlayerUsername} vs ${game.blackPlayerUsername}`,
+            link: `/games/${game._id}`,
+            createdAt: game.updatedAt,
+          })),
+          ...tournaments.slice(0, 3).map((tournament) => ({
+            _id: tournament._id,
+            type: 'tournament' as const,
+            title: 'Tournament Started',
+            description: tournament.name,
+            link: `/tournaments/${tournament._id}`,
+            createdAt: tournament.startDate,
+          })),
+        ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+        setActivities(activityItems);
+      } catch (fallbackError) {
+        toast.error('Failed to load activity');
+      }
     } finally {
       setIsLoading(false);
     }

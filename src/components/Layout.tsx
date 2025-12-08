@@ -61,7 +61,7 @@ export default function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen bg-bg-primary">
       {/* Top Navigation */}
-      <nav className="bg-bg-secondary border-b border-border sticky top-0 z-50">
+      <nav className="glass-nav sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 min-h-[4rem]">
             {/* Logo */}
@@ -83,7 +83,7 @@ export default function Layout({ children }: LayoutProps) {
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
                       isActive(item.path)
                         ? 'bg-primary text-white font-medium'
-                        : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
+                        : 'text-text-secondary hover:glass-light hover:text-text-primary'
                     }`}
                   >
                     <Icon className="w-4 h-4 flex-shrink-0" />
@@ -97,7 +97,7 @@ export default function Layout({ children }: LayoutProps) {
             <div className="flex items-center gap-2">
               <Link
                 to="/search"
-                className="p-2 text-text-secondary hover:text-text-primary hover:bg-bg-hover rounded-lg transition-colors flex items-center justify-center"
+                className="p-2 text-text-secondary hover:text-text-primary hover:glass-light rounded-lg transition-colors flex items-center justify-center"
                 title="Search"
               >
                 <Search className="w-5 h-5" />
@@ -118,7 +118,7 @@ export default function Layout({ children }: LayoutProps) {
 
               <Link
                 to="/profile"
-                className="flex items-center gap-2 px-3 py-2 bg-bg-tertiary hover:bg-bg-hover rounded-lg transition-colors"
+                className="flex items-center gap-2 px-3 py-2 glass-light hover:glass rounded-lg transition-colors"
               >
                 <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-sm font-semibold text-white flex-shrink-0">
                   {user?.username?.[0]?.toUpperCase() || 'U'}
@@ -128,7 +128,7 @@ export default function Layout({ children }: LayoutProps) {
 
               <Link
                 to="/settings"
-                className="p-2 text-text-secondary hover:text-text-primary hover:bg-bg-hover rounded-lg transition-colors flex items-center justify-center"
+                className="p-2 text-text-secondary hover:text-text-primary hover:glass-light rounded-lg transition-colors flex items-center justify-center"
                 title="Settings"
               >
                 <Settings className="w-5 h-5" />
@@ -147,7 +147,7 @@ export default function Layout({ children }: LayoutProps) {
       </nav>
 
       {/* Mobile Navigation */}
-      <nav className="md:hidden bg-bg-secondary border-t border-border fixed bottom-0 left-0 right-0 z-50">
+      <nav className="md:hidden glass-nav fixed bottom-0 left-0 right-0 z-50 border-t border-border">
         <div className="flex items-center justify-around h-16">
           {navItems.slice(0, 4).map((item) => {
             const Icon = item.icon;

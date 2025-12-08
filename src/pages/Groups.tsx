@@ -82,8 +82,8 @@ export default function Groups() {
 
       {/* Create Group Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="max-w-md w-full">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <Card className="max-w-md w-full glass-strong">
             <h2 className="text-xl font-bold mb-4">Create New Group</h2>
             <form onSubmit={handleCreateGroup} className="space-y-4">
               <Input
