@@ -28,7 +28,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const [statistics, setStatistics] = useState<Statistics | null>(null);
-  const [rating, setRating] = useState<Rating | null>(null);
+  const [ratings, setRatings] = useState<Record<string, Rating>>({});
   const [upcomingTournaments, setUpcomingTournaments] = useState<Tournament[]>([]);
   const [recentGames, setRecentGames] = useState<Game[]>([]);
   const [activeGames, setActiveGames] = useState<Game[]>([]);
@@ -37,25 +37,44 @@ export default function Dashboard() {
   const [leaderboard, setLeaderboard] = useState<Rating[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const timeControlTypes = ['bullet', 'blitz', 'rapid', 'classical'] as const;
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         // Load leaderboard separately to not block other data if it fails
         const [
           stats,
-          userRating,
           tournaments,
           games,
           activities,
           friendsData,
         ] = await Promise.all([
           apiService.getStatistics().catch(() => null),
-          apiService.getUserRating().catch(() => null),
           apiService.getTournaments({ status: 'upcoming' }).catch(() => []),
           apiService.getGames({ limit: 5 }).catch(() => []),
           apiService.getActivityFeed().catch(() => []),
           apiService.getFriends().catch(() => []),
         ]);
+
+        // Fetch ratings for each time control type
+        const ratingsPromises = timeControlTypes.map(async (timeControl) => {
+          try {
+            const rating = await apiService.getUserRating(user?._id, timeControl);
+            return { timeControl, rating };
+          } catch (error) {
+            console.warn(`Failed to fetch ${timeControl} rating:`, error);
+            return { timeControl, rating: null };
+          }
+        });
+
+        const ratingsResults = await Promise.all(ratingsPromises);
+        const ratingsMap: Record<string, Rating> = {};
+        ratingsResults.forEach(({ timeControl, rating }) => {
+          if (rating) {
+            ratingsMap[timeControl] = rating;
+          }
+        });
 
         // Try to load leaderboard separately - don't block other data
         let leaderboardData: Rating[] = [];
@@ -67,7 +86,7 @@ export default function Dashboard() {
         }
 
         setStatistics(stats);
-        setRating(userRating);
+        setRatings(ratingsMap);
         setUpcomingTournaments(Array.isArray(tournaments) ? tournaments.slice(0, 3) : []);
         
         const allGames = Array.isArray(games) ? games : [];
@@ -134,150 +153,139 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Welcome Section */}
-      <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <h1 className="text-4xl font-bold mb-2 tracking-tight">
-              Welcome back,{' '}
-              <span className="text-primary">{user?.username}</span>
-            </h1>
-            <p className="text-text-secondary text-lg">
-              {activeGames.length > 0
-                ? `You have ${activeGames.length} active game${activeGames.length > 1 ? 's' : ''}`
-                : 'Ready for your next game?'}
-            </p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }} className="animate-fade-in">
+      {/* Hero Welcome Section */}
+      <div className="glass-card rounded-xl p-5 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/30">
+                <span className="text-2xl text-white font-bold leading-none">♘</span>
+              </div>
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold mb-1 tracking-tight">
+                  Welcome back,{' '}
+                  <span className="text-primary bg-primary/10 px-2 py-0.5 rounded-lg text-lg">{user?.username}</span>
+                </h1>
+                <p className="text-text-secondary text-sm">
+                  {activeGames.length > 0
+                    ? `You have ${activeGames.length} active game${activeGames.length > 1 ? 's' : ''} waiting for you`
+                    : 'Ready to make your next move?'}
+                </p>
+              </div>
+            </div>
+            {activeGames.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                <Button
+                  variant="primary"
+                  size="md"
+                  onClick={() => navigate('/games')}
+                  className="animate-scale-in"
+                >
+                  <Gamepad2 className="w-4 h-4" />
+                  Continue Playing
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="md"
+                  onClick={handleQuickMatch}
+                >
+                  <Zap className="w-4 h-4" />
+                  Quick Match
+                </Button>
+              </div>
+            )}
           </div>
-          {activeGames.length > 0 && (
-            <Button
-              variant="primary"
-              size="lg"
-              onClick={() => navigate('/games')}
-              className="animate-scale-in"
-            >
-              <Gamepad2 className="w-5 h-5" />
-              View Active Games
-            </Button>
-          )}
         </div>
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="animate-scale-in" style={{ animationDelay: '0.2s' }}>
-          <div className="flex items-center justify-between">
-            <div className="flex-1 min-w-0">
-              <p className="text-text-secondary text-sm mb-2 font-medium">Rating</p>
-              <p className="text-4xl font-bold text-primary tracking-tight">
-                {rating?.rating || 1200}
-              </p>
-              {rating && rating.peakRating && rating.peakRating > (rating.rating || 0) && (
-                <p className="text-xs text-text-tertiary mt-1">
-                  Peak: {rating.peakRating}
-                </p>
-              )}
-            </div>
-            <div className="w-14 h-14 bg-primary-light rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 flex-shrink-0">
-              <TrendingUp className="w-7 h-7 text-primary" />
-            </div>
-          </div>
-        </Card>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" style={{ gap: '1rem' }}>
+        {timeControlTypes.map((timeControl, index) => {
+          const rating = ratings[timeControl];
+          const ratingValue = rating?.rating || 1200;
+          const peakRating = rating?.peakRating;
+          const gamesPlayed = rating?.gamesPlayed || 0;
+          const iconMap = {
+            bullet: Zap,
+            blitz: Clock,
+            rapid: Play,
+            classical: Trophy,
+          };
+          const Icon = iconMap[timeControl];
+          const colorClasses = {
+            bullet: { bg: 'bg-accent/20', text: 'text-accent', border: 'border-accent/20', shadow: 'shadow-accent/30' },
+            blitz: { bg: 'bg-primary/20', text: 'text-primary', border: 'border-primary/20', shadow: 'shadow-primary/30' },
+            rapid: { bg: 'bg-secondary/20', text: 'text-secondary', border: 'border-secondary/20', shadow: 'shadow-secondary/30' },
+            classical: { bg: 'bg-warning/20', text: 'text-warning', border: 'border-warning/20', shadow: 'shadow-warning/30' },
+          };
+          const colors = colorClasses[timeControl];
 
-        <Card className="animate-scale-in" style={{ animationDelay: '0.3s' }}>
-          <div className="flex items-center justify-between">
-            <div className="flex-1 min-w-0">
-              <p className="text-text-secondary text-sm mb-2 font-medium">Games Played</p>
-              <p className="text-4xl font-bold text-secondary tracking-tight">
-                {statistics?.totalGames || 0}
-              </p>
-              {statistics && statistics.totalGames > 0 && (
-                <p className="text-xs text-text-tertiary mt-1">
-                  {statistics.wins}W / {statistics.losses}L / {statistics.draws}D
-                </p>
-              )}
-            </div>
-            <div className="w-14 h-14 bg-secondary-light rounded-xl flex items-center justify-center shadow-lg shadow-secondary/20 flex-shrink-0">
-              <Trophy className="w-7 h-7 text-secondary" />
-            </div>
-          </div>
-        </Card>
-
-        <Card className="animate-scale-in" style={{ animationDelay: '0.4s' }}>
-          <div className="flex items-center justify-between">
-            <div className="flex-1 min-w-0">
-              <p className="text-text-secondary text-sm mb-2 font-medium">Win Rate</p>
-              <p className="text-4xl font-bold text-success tracking-tight">
-                {statistics ? Math.round(statistics.winRate) : 0}%
-              </p>
-              {statistics && statistics.currentStreak > 0 && (
-                <p className="text-xs text-text-tertiary mt-1 flex items-center gap-1">
-                  <Flame className="w-3 h-3 text-warning" />
-                  {statistics.currentStreak} streak
-                </p>
-              )}
-            </div>
-            <div className="w-14 h-14 bg-success-light rounded-xl flex items-center justify-center shadow-lg shadow-success/20 flex-shrink-0">
-              <Target className="w-7 h-7 text-success" />
-            </div>
-          </div>
-        </Card>
-
-        <Card className="animate-scale-in" style={{ animationDelay: '0.5s' }}>
-          <div className="flex items-center justify-between">
-            <div className="flex-1 min-w-0">
-              <p className="text-text-secondary text-sm mb-2 font-medium">Best Streak</p>
-              <p className="text-4xl font-bold text-accent tracking-tight">
-                {statistics?.bestStreak || 0}
-              </p>
-              {statistics && statistics.bestStreak > 0 && (
-                <p className="text-xs text-text-tertiary mt-1 flex items-center gap-1">
-                  <Award className="w-3 h-3 text-accent" />
-                  Personal best
-                </p>
-              )}
-            </div>
-            <div className="w-14 h-14 bg-accent-light rounded-xl flex items-center justify-center shadow-lg shadow-accent/20 flex-shrink-0">
-              <Award className="w-7 h-7 text-accent" />
-            </div>
-          </div>
-        </Card>
+          return (
+            <Card key={timeControl} className="glass-card animate-scale-in hover:scale-[1.02] transition-transform" style={{ animationDelay: `${0.2 + index * 0.1}s` }}>
+              <div className="flex items-center justify-between">
+                <div className="flex-1 min-w-0">
+                  <p className="text-text-secondary text-xs mb-2 font-semibold uppercase tracking-wider capitalize">{timeControl}</p>
+                  <p className={`text-3xl font-bold ${colors.text} tracking-tight mb-1`}>
+                    {ratingValue}
+                  </p>
+                  {peakRating && peakRating > ratingValue && (
+                    <div className="flex items-center gap-1">
+                      <TrendingUp className="w-3 h-3 text-primary-lighter" />
+                      <p className="text-xs text-text-tertiary">
+                        Peak: <span className="text-primary-lighter font-semibold">{peakRating}</span>
+                      </p>
+                    </div>
+                  )}
+                  {gamesPlayed > 0 && (
+                    <p className="text-xs text-text-tertiary mt-1">
+                      {gamesPlayed} games
+                    </p>
+                  )}
+                </div>
+                <div className={`w-12 h-12 ${colors.bg} rounded-xl flex items-center justify-center shadow-lg ${colors.shadow} flex-shrink-0 border ${colors.border}`}>
+                  <Icon className={`w-6 h-6 ${colors.text}`} />
+                </div>
+              </div>
+            </Card>
+          );
+        })}
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2" style={{ gap: '1rem' }}>
         {/* Quick Match */}
-        <Card hover className="animate-slide-up" style={{ animationDelay: '0.6s' }}>
-          <div className="space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-primary-light rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/20">
-                <Play className="w-7 h-7 text-primary" />
+        <Card hover className="glass-card animate-slide-up hover:scale-[1.01] transition-all" style={{ animationDelay: '0.6s' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/30 border border-primary/20">
+                <Play className="w-6 h-6 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-xl font-bold mb-1">Quick Match</h3>
+                <h3 className="text-lg font-bold mb-1">Quick Match</h3>
                 <p className="text-text-secondary text-sm">Find an opponent instantly</p>
               </div>
             </div>
-            <Button onClick={handleQuickMatch} className="w-full" size="lg">
-              <Play className="w-5 h-5" />
+            <Button onClick={handleQuickMatch} className="w-full" size="md">
+              <Zap className="w-4 h-4" />
               Find Opponent
             </Button>
           </div>
         </Card>
 
         {/* Create Game */}
-        <Card hover className="animate-slide-up" style={{ animationDelay: '0.7s' }}>
-          <div className="space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-primary-light rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/20">
-                <Clock className="w-7 h-7 text-primary" />
+        <Card hover className="glass-card animate-slide-up hover:scale-[1.01] transition-all" style={{ animationDelay: '0.7s' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-secondary/20 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-secondary/30 border border-secondary/20">
+                <Clock className="w-6 h-6 text-secondary" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-xl font-bold mb-1">Create Game</h3>
+                <h3 className="text-lg font-bold mb-1">Create Game</h3>
                 <p className="text-text-secondary text-sm">Start a custom game</p>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2" style={{ gap: '0.5rem' }}>
               {timeControls.map((tc) => {
                 const Icon = tc.icon;
                 return (
@@ -285,10 +293,10 @@ export default function Dashboard() {
                     key={tc.label}
                     variant="ghost"
                     size="sm"
-                    onClick={() => navigate(`/games/new?time=${tc.initial}&increment=${tc.increment}`)}
-                    className="flex items-center gap-2"
+                    onClick={() => navigate('/games')}
+                    className="flex items-center justify-center gap-1.5 glass-light hover:glass transition-all text-xs"
                   >
-                    <Icon className="w-4 h-4" />
+                    <Icon className="w-3.5 h-3.5" />
                     {tc.label}
                   </Button>
                 );
@@ -374,10 +382,12 @@ export default function Dashboard() {
 
           {/* Recent Games */}
           {recentGames.length > 0 && (
-            <Card className="animate-slide-up" style={{ animationDelay: '0.9s' }}>
+            <Card className="glass-card animate-slide-up" style={{ animationDelay: '0.9s' }}>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-primary flex-shrink-0" />
+                <h2 className="text-lg font-bold flex items-center gap-2">
+                  <div className="w-8 h-8 bg-secondary/20 rounded-lg flex items-center justify-center border border-secondary/20">
+                    <Clock className="w-4 h-4 text-secondary flex-shrink-0" />
+                  </div>
                   <span>Recent Games</span>
                 </h2>
                 <Button
@@ -390,7 +400,7 @@ export default function Dashboard() {
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
-              <div className="space-y-3">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {recentGames.slice(0, 5).map((game) => {
                   const isPlayer =
                     game.whitePlayer === user?._id || game.blackPlayer === user?._id;
@@ -400,8 +410,10 @@ export default function Dashboard() {
                       ? game.blackPlayerUsername
                       : game.whitePlayerUsername
                     : null;
-                  const result =
-                    game.result === 'white'
+                  // Only show result if game is finished and has a result
+                  const isFinished = game.status === 'finished' || game.status === 'abandoned';
+                  const result = isFinished && game.result
+                    ? game.result === 'white'
                       ? isWhite
                         ? 'Won'
                         : 'Lost'
@@ -411,7 +423,8 @@ export default function Dashboard() {
                         : 'Lost'
                       : game.result === 'draw'
                       ? 'Draw'
-                      : null;
+                      : null
+                    : null;
 
                   return (
                     <div
@@ -457,6 +470,17 @@ export default function Dashboard() {
                                 {result}
                               </span>
                             )}
+                            {!isFinished && (
+                              <span
+                                className={`text-xs font-semibold px-2 py-1 rounded ${
+                                  game.status === 'waiting'
+                                    ? 'bg-warning-light text-warning'
+                                    : 'bg-primary-light text-primary'
+                                }`}
+                              >
+                                {game.status === 'waiting' ? 'Waiting' : 'Active'}
+                              </span>
+                            )}
                           </div>
                           <div className="flex items-center gap-3 text-sm text-text-secondary">
                             <span className="text-xs">
@@ -486,10 +510,12 @@ export default function Dashboard() {
 
           {/* Activity Feed */}
           {activityFeed.length > 0 && (
-            <Card className="animate-slide-up" style={{ animationDelay: '1s' }}>
+            <Card className="glass-card animate-slide-up" style={{ animationDelay: '1s' }}>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-primary flex-shrink-0" />
+                <h2 className="text-lg font-bold flex items-center gap-2">
+                  <div className="w-8 h-8 bg-accent/20 rounded-lg flex items-center justify-center border border-accent/20">
+                    <Activity className="w-4 h-4 text-accent flex-shrink-0" />
+                  </div>
                   <span>Activity Feed</span>
                 </h2>
                 <Button
@@ -502,18 +528,18 @@ export default function Dashboard() {
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
-              <div className="space-y-3">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {activityFeed.map((activity, index) => (
                   <div
                     key={activity._id || index}
-                    className="p-3 bg-bg-tertiary rounded-lg hover:bg-bg-hover transition-colors"
+                    className="glass-light rounded-lg p-3 hover:glass transition-all border border-border/50"
                   >
                     <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 bg-primary-light rounded-full flex items-center justify-center flex-shrink-0">
-                        <Activity className="w-4 h-4 text-primary" />
+                      <div className="w-8 h-8 bg-accent/20 rounded-lg flex items-center justify-center flex-shrink-0 border border-accent/20">
+                        <Activity className="w-4 h-4 text-accent" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-text-primary">
+                        <p className="text-sm text-text-primary font-medium">
                           {activity.message || activity.description || 'Activity update'}
                         </p>
                         <p className="text-xs text-text-tertiary mt-1">
@@ -582,10 +608,12 @@ export default function Dashboard() {
 
           {/* Leaderboard Preview */}
           {leaderboard.length > 0 ? (
-            <Card className="animate-slide-up" style={{ animationDelay: '0.9s' }}>
+            <Card className="glass-card animate-slide-up" style={{ animationDelay: '0.9s' }}>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold flex items-center gap-2">
-                  <Crown className="w-5 h-5 text-primary flex-shrink-0" />
+                <h2 className="text-lg font-bold flex items-center gap-2">
+                  <div className="w-8 h-8 bg-warning/20 rounded-lg flex items-center justify-center border border-warning/20">
+                    <Crown className="w-4 h-4 text-warning flex-shrink-0" />
+                  </div>
                   <span>Top Players</span>
                 </h2>
                 <Button
@@ -598,33 +626,35 @@ export default function Dashboard() {
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
-              <div className="space-y-2">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {leaderboard.map((player, index) => (
                   <div
                     key={player.userId || `leaderboard-${index}`}
-                    className="flex items-center gap-3 p-3 bg-bg-tertiary rounded-lg hover:bg-bg-hover transition-colors cursor-pointer"
+                    className="glass-light rounded-xl p-4 hover:glass transition-all cursor-pointer border border-border/50 hover:border-warning/40"
                     onClick={() => player.userId && navigate(`/profile/${player.userId}`)}
                   >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                      index === 0 
-                        ? 'bg-warning-light text-warning' 
-                        : index === 1 
-                        ? 'bg-text-tertiary/30 text-text-secondary'
-                        : index === 2
-                        ? 'bg-accent-light text-accent'
-                        : 'bg-primary-light text-primary'
-                    }`}>
-                      {index === 0 ? <Crown className="w-4 h-4" /> : index + 1}
+                    <div className="flex items-center gap-4">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0 border ${
+                        index === 0 
+                          ? 'bg-warning/20 text-warning border-warning/30 shadow-lg shadow-warning/20' 
+                          : index === 1 
+                          ? 'bg-text-tertiary/20 text-text-secondary border-text-tertiary/30'
+                          : index === 2
+                          ? 'bg-accent/20 text-accent border-accent/30'
+                          : 'bg-primary/20 text-primary border-primary/30'
+                      }`}>
+                        {index === 0 ? <Crown className="w-5 h-5" /> : index + 1}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-sm truncate">
+                          Player #{index + 1}
+                        </p>
+                        <p className="text-xs text-text-secondary mt-1">
+                          <span className="font-semibold text-primary">{player.rating || 1200}</span> • {player.gamesPlayed || 0} games
+                        </p>
+                      </div>
+                      <BarChart3 className="w-5 h-5 text-text-tertiary flex-shrink-0" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm truncate">
-                        Player #{index + 1}
-                      </p>
-                      <p className="text-xs text-text-secondary">
-                        {player.rating || 1200} • {player.gamesPlayed || 0} games
-                      </p>
-                    </div>
-                    <BarChart3 className="w-4 h-4 text-text-tertiary flex-shrink-0" />
                   </div>
                 ))}
               </div>
@@ -633,10 +663,12 @@ export default function Dashboard() {
 
           {/* Friends */}
           {friends.length > 0 && (
-            <Card className="animate-slide-up" style={{ animationDelay: '1s' }}>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold flex items-center gap-2">
-                  <Users className="w-5 h-5 text-primary flex-shrink-0" />
+            <Card className="glass-card animate-slide-up" style={{ animationDelay: '1s' }}>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold flex items-center gap-3">
+                  <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/20">
+                    <Users className="w-5 h-5 text-primary flex-shrink-0" />
+                  </div>
                   <span>Friends</span>
                 </h2>
                 <Button
@@ -649,33 +681,36 @@ export default function Dashboard() {
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
-              <div className="space-y-2">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {friends.map((friend) => (
                   <div
                     key={friend._id}
-                    className="flex items-center gap-3 p-3 bg-bg-tertiary rounded-lg hover:bg-bg-hover transition-colors cursor-pointer"
+                    className="glass-light rounded-xl p-4 hover:glass transition-all cursor-pointer border border-border/50 hover:border-primary/40"
                     onClick={() => navigate(`/profile/${friend._id}`)}
                   >
-                    <div className="w-10 h-10 bg-primary-light rounded-full flex items-center justify-center text-sm font-bold text-primary flex-shrink-0">
-                      {(friend.username || 'U')[0]?.toUpperCase() || 'U'}
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center text-base font-bold text-primary flex-shrink-0 border border-primary/30 shadow-lg shadow-primary/10">
+                        {(friend.username || 'U')[0]?.toUpperCase() || 'U'}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-sm truncate">{friend.username || 'User'}</p>
+                        <p className="text-xs text-text-secondary mt-1">
+                          Rating: <span className="font-semibold text-primary">{friend.rating || 1200}</span>
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/chat`);
+                        }}
+                        title="Message"
+                        className="glass-light hover:glass"
+                      >
+                        <MessageSquare className="w-4 h-4" />
+                      </Button>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm truncate">{friend.username || 'User'}</p>
-                      <p className="text-xs text-text-secondary">
-                        Rating: {friend.rating || 1200}
-                      </p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/chat`);
-                      }}
-                      title="Message"
-                    >
-                      <MessageSquare className="w-4 h-4" />
-                    </Button>
                   </div>
                 ))}
               </div>

@@ -251,10 +251,14 @@ export default function Profile() {
           <div className="space-y-2">
             {recentGames.map((game) => {
               const isWhite = game.whitePlayer === user?._id;
-              const isWinner =
-                game.result === 'draw'
+              // Only show result if game is finished and has a result
+              const isFinished = game.status === 'finished' || game.status === 'abandoned';
+              const isWinner = isFinished && game.result
+                ? game.result === 'draw'
                   ? null
-                  : (game.result === 'white' && isWhite) || (game.result === 'black' && !isWhite);
+                  : (game.result === 'white' && isWhite) || (game.result === 'black' && !isWhite)
+                : null;
+              
               return (
                 <div
                   key={game._id}
@@ -268,6 +272,9 @@ export default function Profile() {
                       </p>
                       <p className="text-text-secondary text-sm">
                         {new Date(game.createdAt).toLocaleDateString()} • {(game.moves || []).length} moves
+                        {!isFinished && (
+                          <span className="ml-2 text-xs text-warning">• {game.status === 'waiting' ? 'Waiting' : 'In Progress'}</span>
+                        )}
                       </p>
                     </div>
                     <div className="text-right">
@@ -275,16 +282,25 @@ export default function Profile() {
                         <span
                           className={`text-sm font-semibold px-3 py-1 rounded ${
                             isWinner
-                              ? 'bg-bg-tertiary text-text-primary'
+                              ? 'bg-success-light text-success'
                               : 'bg-danger-light text-danger'
                           }`}
                         >
                           {isWinner ? 'Win' : 'Loss'}
                         </span>
                       )}
-                      {game.result === 'draw' && (
+                      {isFinished && game.result === 'draw' && (
                         <span className="text-sm font-semibold px-3 py-1 rounded bg-text-tertiary/20 text-text-tertiary">
                           Draw
+                        </span>
+                      )}
+                      {!isFinished && (
+                        <span className={`text-sm font-semibold px-3 py-1 rounded ${
+                          game.status === 'waiting' 
+                            ? 'bg-warning-light text-warning'
+                            : 'bg-primary-light text-primary'
+                        }`}>
+                          {game.status === 'waiting' ? 'Waiting' : 'Active'}
                         </span>
                       )}
                     </div>

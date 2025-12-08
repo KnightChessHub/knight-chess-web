@@ -500,8 +500,12 @@ class ApiService {
     }
   }
 
-  async getUserRating(userId?: string): Promise<Rating> {
-    const { data } = await this.api.get(`/ratings/${userId || ''}`);
+  async getUserRating(userId?: string, timeControl?: string): Promise<Rating> {
+    const params: any = {};
+    if (timeControl) {
+      params.timeControl = timeControl;
+    }
+    const { data } = await this.api.get(`/ratings/${userId || ''}`, { params });
     return this.normalizeResponse<Rating>(data, 'rating');
   }
 
