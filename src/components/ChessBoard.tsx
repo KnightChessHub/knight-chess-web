@@ -86,7 +86,7 @@ export default function ChessBoard({
       const expectedColor = orientation === 'white' ? 'w' : 'b';
 
       if (selectedSquare && validMoves.includes(square)) {
-        // Make move
+        // Make move - only check if disabled prop allows it
         try {
           const move = game.move({
             from: selectedSquare,
@@ -105,9 +105,16 @@ export default function ChessBoard({
         }
       } else if (piece && piece.color === expectedColor && currentTurn === expectedColor) {
         // Select piece - only if it's the correct color and turn
-        setSelectedSquare(square);
-        const moves = game.moves({ square, verbose: true });
-        setValidMoves(moves.map((m) => m.to as Square));
+        // The disabled prop should prevent this if it's not the user's turn
+        // But if disabled is false, allow selection even if turn check fails (for offline games)
+        if (!disabled) {
+          setSelectedSquare(square);
+          const moves = game.moves({ square, verbose: true });
+          setValidMoves(moves.map((m) => m.to as Square));
+        } else {
+          setSelectedSquare(null);
+          setValidMoves([]);
+        }
       } else {
         setSelectedSquare(null);
         setValidMoves([]);

@@ -501,12 +501,31 @@ class ApiService {
   }
 
   async getUserRating(userId?: string, timeControl?: string): Promise<Rating> {
-    const params: any = {};
-    if (timeControl) {
-      params.timeControl = timeControl;
+    try {
+      const params: any = {};
+      if (timeControl) {
+        params.timeControl = timeControl;
+      }
+      // If userId is provided, use it; otherwise use empty string to get current user's rating
+      const url = userId ? `/ratings/${userId}` : '/ratings';
+      const { data } = await this.api.get(url, { params });
+      return this.normalizeResponse<Rating>(data, 'rating');
+    } catch (error: any) {
+      console.error('Get user rating error:', error?.response?.data || error);
+      // Return default rating if error occurs
+      return {
+        userId: userId || '',
+        rating: 1200,
+        peakRating: 1200,
+        gamesPlayed: 0,
+        wins: 0,
+        losses: 0,
+        draws: 0,
+        winRate: 0,
+        timeControl: timeControl || 'all',
+        lastUpdated: new Date().toISOString(),
+      };
     }
-    const { data } = await this.api.get(`/ratings/${userId || ''}`, { params });
-    return this.normalizeResponse<Rating>(data, 'rating');
   }
 
   // Notifications
@@ -686,10 +705,24 @@ class ApiService {
   }
 
   async searchUsers(query: string): Promise<User[]> {
-    const { data } = await this.api.get('/search/users', {
-      params: { q: query },
-    });
-    return this.normalizeArrayResponse<User>(data, 'users');
+    try {
+      const { data } = await this.api.get('/search/users', {
+        params: { q: query },
+      });
+      // Backend returns { success: true, data: [...] }
+      if (data && typeof data === 'object') {
+        if ('data' in data && Array.isArray(data.data)) {
+          return data.data;
+        }
+        if ('success' in data && data.success && 'data' in data && Array.isArray(data.data)) {
+          return data.data;
+        }
+      }
+      return [];
+    } catch (error: any) {
+      console.error('Search users error:', error?.response?.data || error);
+      return [];
+    }
   }
 
   // Activity

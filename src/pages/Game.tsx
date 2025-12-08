@@ -4,6 +4,7 @@ import { apiService } from '../services/api';
 import { useGameStore } from '../store/gameStore';
 import { useAuthStore } from '../store/authStore';
 import ChessBoard from '../components/ChessBoard';
+import ChessLoader from '../components/ChessLoader';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import { ArrowLeft, Flag, Clock, RotateCcw, BarChart3, Play } from 'lucide-react';
@@ -190,11 +191,7 @@ export default function GamePage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <ChessLoader />;
   }
 
   if (!game) {

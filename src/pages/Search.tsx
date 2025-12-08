@@ -32,6 +32,7 @@ export default function Search() {
       setTournaments([]);
       setHasSearched(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, searchType]);
 
   const performSearch = async () => {
