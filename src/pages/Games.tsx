@@ -71,15 +71,15 @@ export default function Games() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-8 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between animate-slide-up">
         <div>
-          <h1 className="text-2xl font-semibold mb-1">Games</h1>
-          <p className="text-text-secondary">Play, watch, and analyze chess games</p>
+          <h1 className="text-3xl font-bold mb-2 tracking-tight">Games</h1>
+          <p className="text-text-secondary text-lg">Play, watch, and analyze chess games</p>
         </div>
         <Button onClick={() => navigate('/games/new')} size="lg">
-          <Plus className="w-4 h-4" />
+          <Plus className="w-5 h-5" />
           New Game
         </Button>
       </div>
@@ -99,8 +99,8 @@ export default function Games() {
       </div>
 
       {/* Quick Create */}
-      <Card>
-        <h3 className="text-lg font-semibold mb-4">Quick Create</h3>
+      <Card className="animate-scale-in" style={{ animationDelay: '0.1s' }}>
+        <h3 className="text-xl font-bold mb-5">Quick Create</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: 'Bullet', initial: 60, increment: 0 },
@@ -165,7 +165,7 @@ export default function Games() {
                     <div className="flex items-center gap-2 text-sm">
                       <Clock className="w-4 h-4 text-text-secondary" />
                       <span className="text-text-secondary">
-                        {formatTime(game.timeControl.initial)} + {game.timeControl.increment}s
+                        {formatTime(game.timeControl?.initial || 0)} + {game.timeControl?.increment || 0}s
                       </span>
                     </div>
                   </div>

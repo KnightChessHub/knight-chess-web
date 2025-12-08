@@ -166,11 +166,11 @@ export default function Search() {
                     {users.map((u) => (
                       <Card key={u._id} hover>
                         <div className="flex items-center space-x-4">
-                          <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold">
-                            {u.username[0]?.toUpperCase() || 'U'}
+                          <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold shadow-lg shadow-primary/30">
+                            {(u.username || 'U')[0]?.toUpperCase() || 'U'}
                           </div>
                           <div className="flex-1">
-                            <p className="font-semibold">{u.username}</p>
+                            <p className="font-semibold">{u.username || 'Unknown'}</p>
                             <p className="text-text-secondary text-sm">Rating: {u.rating || 1200}</p>
                           </div>
                           {u._id !== user?._id && (
@@ -205,11 +205,11 @@ export default function Search() {
                       >
                         <div className="space-y-2">
                           <p className="font-semibold">
-                            {game.whitePlayerUsername} vs {game.blackPlayerUsername}
+                            {game.whitePlayerUsername || 'White'} vs {game.blackPlayerUsername || 'Black'}
                           </p>
-                          <p className="text-text-secondary text-sm capitalize">{game.status}</p>
+                          <p className="text-text-secondary text-sm capitalize">{game.status || 'unknown'}</p>
                           <p className="text-text-tertiary text-xs">
-                            {new Date(game.createdAt).toLocaleDateString()}
+                            {game.createdAt ? new Date(game.createdAt).toLocaleDateString() : 'Unknown date'}
                           </p>
                         </div>
                       </Card>
@@ -236,7 +236,7 @@ export default function Search() {
                           <p className="font-semibold">{tournament.name}</p>
                           <p className="text-text-secondary text-sm capitalize">{tournament.status}</p>
                           <p className="text-text-tertiary text-xs">
-                            {tournament.participants.length} / {tournament.maxParticipants} participants
+                            {(tournament.participants || []).length} / {tournament.maxParticipants || 0} participants
                           </p>
                         </div>
                       </Card>

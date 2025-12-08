@@ -79,32 +79,32 @@ export default function Friends() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="mb-4">
-        <h1 className="text-2xl font-semibold mb-1 flex items-center gap-2">
-          <Users className="w-5 h-5 text-primary flex-shrink-0" />
+    <div className="space-y-8 animate-fade-in">
+      <div className="animate-slide-up">
+        <h1 className="text-3xl font-bold mb-2 tracking-tight flex items-center gap-3">
+          <Users className="w-8 h-8 text-primary flex-shrink-0" />
           <span>Friends</span>
         </h1>
-        <p className="text-text-secondary">Manage your friends and connections</p>
+        <p className="text-text-secondary text-lg">Manage your friends and connections</p>
       </div>
 
       {/* Friend Requests */}
       {requests.length > 0 && (
-        <Card>
-          <h2 className="text-lg font-semibold mb-4">Friend Requests</h2>
+        <Card className="animate-scale-in" style={{ animationDelay: '0.1s' }}>
+          <h2 className="text-xl font-bold mb-5">Friend Requests</h2>
           <div className="space-y-4">
             {requests.map((request) => (
               <div
                 key={request._id}
-                className="flex items-center justify-between p-4 bg-bg-tertiary rounded-lg"
+                className="flex items-center justify-between p-5 bg-bg-tertiary rounded-xl hover:bg-bg-hover transition-all"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-semibold">
-                    {request.fromUsername?.[0]?.toUpperCase() || 'U'}
+                  <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold shadow-lg shadow-primary/30">
+                    {(request.fromUsername || 'U')[0]?.toUpperCase() || 'U'}
                   </div>
                   <div>
-                    <p className="font-semibold">{request.fromUsername || 'User'}</p>
-                    <p className="text-text-secondary text-sm">Wants to be your friend</p>
+                    <p className="font-bold text-lg">{request.fromUsername || 'User'}</p>
+                    <p className="text-text-secondary">Wants to be your friend</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -134,32 +134,34 @@ export default function Friends() {
       )}
 
       {/* Friends List */}
-      <Card>
-        <h2 className="text-lg font-semibold mb-4">Your Friends ({friends.length})</h2>
+      <Card className="animate-scale-in" style={{ animationDelay: '0.2s' }}>
+        <h2 className="text-xl font-bold mb-5">Your Friends ({friends.length})</h2>
         {friends.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-text-secondary mb-4">No friends yet</p>
-            <p className="text-text-tertiary text-sm">Send friend requests to connect with players</p>
+            <Users className="w-16 h-16 text-text-tertiary mx-auto mb-4" />
+            <p className="text-text-secondary mb-2 text-lg">No friends yet</p>
+            <p className="text-text-tertiary">Send friend requests to connect with players</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {friends.map((friend) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {friends.map((friend, index) => (
               <div
                 key={friend._id}
-                className="p-4 bg-bg-tertiary rounded-lg hover:bg-bg-hover transition-colors"
+                className="p-5 bg-bg-tertiary rounded-xl hover:bg-bg-hover transition-all hover:scale-[1.02]"
+                style={{ animationDelay: `${index * 0.05}s` }}
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-semibold">
-                      {friend.username[0]?.toUpperCase() || 'U'}
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-semibold shadow-lg shadow-primary/30">
+                        {(friend.username || 'U')[0]?.toUpperCase() || 'U'}
+                      </div>
+                      <div>
+                        <p className="font-semibold">{friend.username || 'Unknown'}</p>
+                        <p className="text-text-secondary text-sm">
+                          Rating: {friend.rating || 1200}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold">{friend.username}</p>
-                      <p className="text-text-secondary text-sm">
-                        Rating: {friend.rating || 1200}
-                      </p>
-                    </div>
-                  </div>
                   <div className="flex items-center gap-2">
                     <Button variant="ghost" size="sm" title="Challenge to game">
                       <UserPlus className="w-4 h-4" />

@@ -48,17 +48,17 @@ export default function Tournaments() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between mb-4">
+    <div className="space-y-8 animate-fade-in">
+      <div className="flex items-center justify-between animate-slide-up">
         <div>
-          <h1 className="text-2xl font-semibold mb-1 flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-primary flex-shrink-0" />
+          <h1 className="text-3xl font-bold mb-2 tracking-tight flex items-center gap-3">
+            <Trophy className="w-8 h-8 text-primary flex-shrink-0" />
             <span>Tournaments</span>
           </h1>
-          <p className="text-text-secondary">Compete in chess tournaments</p>
+          <p className="text-text-secondary text-lg">Compete in chess tournaments</p>
         </div>
         <Button onClick={() => navigate('/tournaments/new')} size="lg">
-          <Plus className="w-4 h-4" />
+          <Plus className="w-5 h-5" />
           Create Tournament
         </Button>
       </div>
@@ -71,6 +71,7 @@ export default function Tournaments() {
             variant={filter === f ? 'primary' : 'ghost'}
             size="sm"
             onClick={() => setFilter(f)}
+            className="transition-all duration-300"
           >
             {f.charAt(0).toUpperCase() + f.slice(1)}
           </Button>
@@ -86,12 +87,12 @@ export default function Tournaments() {
           </div>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {tournaments.map((tournament) => (
-            <Card key={tournament._id} hover onClick={() => navigate(`/tournaments/${tournament._id}`)}>
-              <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {tournaments.map((tournament, index) => (
+            <Card key={tournament._id} hover onClick={() => navigate(`/tournaments/${tournament._id}`)} className="animate-scale-in" style={{ animationDelay: `${index * 0.1}s` }}>
+              <div className="space-y-5">
                 <div>
-                  <h3 className="text-xl font-bold mb-2">{tournament.name}</h3>
+                  <h3 className="text-xl font-bold mb-2">{tournament.name || 'Unnamed Tournament'}</h3>
                   {tournament.description && (
                     <p className="text-text-secondary text-sm line-clamp-2">
                       {tournament.description}
@@ -103,14 +104,14 @@ export default function Tournaments() {
                   <div className="flex items-center gap-2 text-sm">
                     <Users className="w-4 h-4 text-text-secondary flex-shrink-0" />
                     <span className="text-text-secondary">
-                      {(tournament.participants || []).length} / {tournament.maxParticipants} players
+                      {(tournament.participants || []).length} / {tournament.maxParticipants || 0} players
                     </span>
                   </div>
 
                   <div className="flex items-center gap-2 text-sm">
                     <Calendar className="w-4 h-4 text-text-secondary flex-shrink-0" />
                     <span className="text-text-secondary">
-                      {new Date(tournament.startDate).toLocaleDateString()}
+                      {tournament.startDate ? new Date(tournament.startDate).toLocaleDateString() : 'TBD'}
                     </span>
                   </div>
 

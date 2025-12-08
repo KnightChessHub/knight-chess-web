@@ -115,47 +115,47 @@ export default function GamePage() {
   const isPlayer = isWhitePlayer || isBlackPlayer;
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-8 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between animate-slide-up">
+        <div className="flex items-center gap-4">
           <Button variant="ghost" onClick={() => navigate('/games')} size="md">
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-5 h-5" />
             Back
           </Button>
           <div>
-            <h1 className="text-2xl font-semibold">Chess Game</h1>
-            <p className="text-text-secondary">
-              {game.status === 'active' ? 'In Progress' : game.status}
+            <h1 className="text-3xl font-bold tracking-tight">Chess Game</h1>
+            <p className="text-text-secondary text-lg mt-1">
+              {game.status === 'active' ? 'In Progress' : game.status.charAt(0).toUpperCase() + game.status.slice(1)}
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           {game.status === 'finished' && (
             <>
               <Button variant="secondary" onClick={() => navigate(`/games/${game._id}/replay`)} size="md">
-                <RotateCcw className="w-4 h-4" />
+                <RotateCcw className="w-5 h-5" />
                 Replay
               </Button>
               <Button variant="ghost" onClick={() => navigate(`/games/${game._id}/analysis`)} size="md">
-                <BarChart3 className="w-4 h-4" />
+                <BarChart3 className="w-5 h-5" />
                 Analyze
               </Button>
             </>
           )}
           {isPlayer && game.status === 'active' && (
             <Button variant="danger" onClick={handleResign} size="md">
-              <Flag className="w-4 h-4" />
+              <Flag className="w-5 h-5" />
               Resign
             </Button>
           )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Chess Board */}
-        <div className="lg:col-span-2 flex flex-col items-center space-y-6">
-          <div className="w-full flex justify-center bg-bg-card border border-border rounded-2xl p-6">
+        <div className="lg:col-span-2 flex flex-col items-center space-y-6 animate-scale-in">
+          <div className="w-full flex justify-center glass-card rounded-2xl p-8 shadow-2xl">
             <ChessBoard
               fen={game.fen}
               onMove={handleMove}
@@ -167,17 +167,17 @@ export default function GamePage() {
           {/* Move History */}
           {(game.moves || []).length > 0 && (
             <Card className="w-full">
-              <h3 className="text-lg font-bold mb-4">Move History</h3>
-              <div className="max-h-64 overflow-y-auto space-y-1">
+              <h3 className="text-xl font-bold mb-5">Move History</h3>
+              <div className="max-h-80 overflow-y-auto space-y-2">
                 {(game.moves || []).map((move, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between p-2 bg-bg-tertiary rounded hover:bg-bg-hover"
+                    className="flex items-center justify-between p-3 bg-bg-tertiary rounded-lg hover:bg-bg-hover transition-colors"
                   >
-                    <span className="text-text-secondary">
+                    <span className="text-text-secondary font-medium">
                       {Math.floor(index / 2) + 1}.{index % 2 === 0 ? '' : '..'}
                     </span>
-                    <span className="font-mono">{move}</span>
+                    <span className="font-mono text-text-primary font-semibold">{move}</span>
                   </div>
                 ))}
               </div>
@@ -186,88 +186,88 @@ export default function GamePage() {
         </div>
 
         {/* Game Info */}
-        <div className="space-y-4">
+        <div className="space-y-6">
           {/* Players */}
-          <Card>
-            <h3 className="text-lg font-bold mb-4">Players</h3>
+          <Card className="animate-scale-in" style={{ animationDelay: '0.1s' }}>
+            <h3 className="text-xl font-bold mb-5">Players</h3>
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-bg-tertiary rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-bg-primary font-bold">
+              <div className={`flex items-center justify-between p-4 bg-bg-tertiary rounded-xl transition-all ${isMyTurn && isWhitePlayer ? 'ring-2 ring-primary' : ''}`}>
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-bg-primary font-bold shadow-lg">
                     W
                   </div>
                   <div>
-                    <p className="font-semibold">{game.whitePlayerUsername || 'White Player'}</p>
-                    <p className="text-text-secondary text-sm">White</p>
+                    <p className="font-bold text-lg">{game.whitePlayerUsername || 'White Player'}</p>
+                    <p className="text-text-secondary">White</p>
                   </div>
                 </div>
                 {isWhitePlayer && (
-                  <span className="text-xs bg-primary-light text-primary px-2 py-1 rounded">You</span>
+                  <span className="text-xs bg-primary text-white px-3 py-1.5 rounded-lg font-semibold shadow-lg">You</span>
                 )}
               </div>
 
-              <div className="flex items-center justify-between p-3 bg-bg-tertiary rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-bg-primary border-2 border-white rounded-full flex items-center justify-center text-white font-bold">
+              <div className={`flex items-center justify-between p-4 bg-bg-tertiary rounded-xl transition-all ${isMyTurn && isBlackPlayer ? 'ring-2 ring-primary' : ''}`}>
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-bg-primary border-2 border-white rounded-xl flex items-center justify-center text-white font-bold shadow-lg">
                     B
                   </div>
                   <div>
-                    <p className="font-semibold">{game.blackPlayerUsername || 'Black Player'}</p>
-                    <p className="text-text-secondary text-sm">Black</p>
+                    <p className="font-bold text-lg">{game.blackPlayerUsername || 'Black Player'}</p>
+                    <p className="text-text-secondary">Black</p>
                   </div>
                 </div>
                 {isBlackPlayer && (
-                  <span className="text-xs bg-primary-light text-primary px-2 py-1 rounded">You</span>
+                  <span className="text-xs bg-primary text-white px-3 py-1.5 rounded-lg font-semibold shadow-lg">You</span>
                 )}
               </div>
             </div>
           </Card>
 
           {/* Time Control */}
-          <Card>
-            <h3 className="text-lg font-bold mb-4 flex items-center space-x-2">
-              <Clock className="w-5 h-5 text-primary" />
+          <Card className="animate-scale-in" style={{ animationDelay: '0.2s' }}>
+            <h3 className="text-xl font-bold mb-5 flex items-center space-x-3">
+              <Clock className="w-6 h-6 text-primary" />
               <span>Time Control</span>
             </h3>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-text-secondary">Initial Time</span>
-                <span className="font-semibold">{game.timeControl.initial}s</span>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center p-3 bg-bg-tertiary rounded-lg">
+                <span className="text-text-secondary font-medium">Initial Time</span>
+                <span className="font-bold text-lg">{Math.floor((game.timeControl?.initial || 0) / 60)}:{(game.timeControl?.initial || 0) % 60}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-text-secondary">Increment</span>
-                <span className="font-semibold">+{game.timeControl.increment}s</span>
+              <div className="flex justify-between items-center p-3 bg-bg-tertiary rounded-lg">
+                <span className="text-text-secondary font-medium">Increment</span>
+                <span className="font-bold text-lg">+{game.timeControl?.increment || 0}s</span>
               </div>
             </div>
           </Card>
 
           {/* Game Status */}
-          <Card>
-            <h3 className="text-lg font-bold mb-4">Game Status</h3>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-text-secondary">Status</span>
+          <Card className="animate-scale-in" style={{ animationDelay: '0.3s' }}>
+            <h3 className="text-xl font-bold mb-5">Game Status</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center p-3 bg-bg-tertiary rounded-lg">
+                <span className="text-text-secondary font-medium">Status</span>
                 <span
-                  className={`font-semibold ${
+                  className={`font-bold text-lg px-3 py-1 rounded-lg ${
                     game.status === 'active'
-                      ? 'text-text-primary'
+                      ? 'bg-success-light text-success'
                       : game.status === 'finished'
-                      ? 'text-text-primary'
-                      : 'text-text-secondary'
+                      ? 'bg-text-tertiary/20 text-text-tertiary'
+                      : 'bg-warning-light text-warning'
                   }`}
                 >
                   {game.status.charAt(0).toUpperCase() + game.status.slice(1)}
                 </span>
               </div>
               {game.result && (
-                <div className="flex justify-between">
-                  <span className="text-text-secondary">Result</span>
-                  <span className="font-semibold">{game.result}</span>
+                <div className="flex justify-between items-center p-3 bg-bg-tertiary rounded-lg">
+                  <span className="text-text-secondary font-medium">Result</span>
+                  <span className="font-bold text-lg">{game.result}</span>
                 </div>
               )}
               {isMyTurn && game.status === 'active' && (
-                <div className="mt-4 p-3 bg-primary-light border border-primary rounded-lg">
-                  <p className="text-primary font-semibold text-center">Your Turn!</p>
+                <div className="mt-4 p-4 bg-primary-light border-2 border-primary rounded-xl animate-glow">
+                  <p className="text-primary font-bold text-center text-lg">Your Turn!</p>
                 </div>
               )}
             </div>

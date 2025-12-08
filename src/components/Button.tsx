@@ -22,11 +22,11 @@ export default function Button({
 
   const variants = {
     primary:
-      'bg-primary hover:bg-primary-dark text-white font-medium focus:ring-primary transition-all duration-200',
+      'bg-primary hover:bg-primary-dark text-white font-semibold focus:ring-primary shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]',
     secondary:
-      'bg-secondary hover:bg-secondary-dark text-white font-medium focus:ring-secondary transition-all duration-200',
-    danger: 'bg-danger hover:bg-danger-dark text-white font-medium focus:ring-danger transition-all duration-200',
-    ghost: 'bg-bg-tertiary hover:bg-bg-hover text-text-primary border border-border hover:border-primary transition-all duration-200',
+      'bg-secondary hover:bg-secondary-dark text-white font-semibold focus:ring-secondary shadow-lg shadow-secondary/20 hover:shadow-xl hover:shadow-secondary/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]',
+    danger: 'bg-danger hover:bg-danger-dark text-white font-semibold focus:ring-danger shadow-lg shadow-danger/20 hover:shadow-xl hover:shadow-danger/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]',
+    ghost: 'bg-bg-tertiary hover:bg-bg-hover text-text-primary border border-border hover:border-primary transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]',
   };
 
   const sizes = {

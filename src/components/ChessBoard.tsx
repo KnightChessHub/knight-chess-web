@@ -9,7 +9,7 @@ interface ChessBoardProps {
   disabled?: boolean;
 }
 
-const SQUARE_SIZE = 60;
+const SQUARE_SIZE = 70;
 
 const PIECES: Record<string, string> = {
   'K': '♔', 'Q': '♕', 'R': '♖', 'B': '♗', 'N': '♘', 'P': '♙',
@@ -46,6 +46,16 @@ export default function ChessBoard({
   const getSquareColor = (row: number, col: number): string => {
     const isLight = (row + col) % 2 === 0;
     return isLight ? '#f0d9b5' : '#b58863';
+  };
+
+  const getFileLabel = (col: number): string => {
+    const files = 'abcdefgh';
+    return files[orientation === 'white' ? col : 7 - col];
+  };
+
+  const getRankLabel = (row: number): string => {
+    const ranks = '87654321';
+    return ranks[orientation === 'white' ? row : 7 - row];
   };
 
   const getSquareName = (row: number, col: number): Square => {
@@ -122,11 +132,15 @@ export default function ChessBoard({
 
     if (isSelected) {
       squareStyle.backgroundColor = '#f7f769';
-      squareStyle.boxShadow = 'inset 0 0 0 3px #8b5cf6';
+      squareStyle.boxShadow = 'inset 0 0 0 4px rgba(5, 150, 105, 0.8)';
+      squareStyle.zIndex = 10;
     } else if (isValid) {
       squareStyle.backgroundColor = hovered ? '#a8e6cf' : '#c8e6c9';
-    } else if (hovered) {
-      squareStyle.backgroundColor = '#e0e0e0';
+      squareStyle.boxShadow = hovered ? 'inset 0 0 0 2px rgba(5, 150, 105, 0.5)' : 'none';
+    } else if (hovered && piece) {
+      squareStyle.backgroundColor = '#e8e8e8';
+      squareStyle.transform = 'scale(1.1)';
+      squareStyle.zIndex = 5;
     }
 
     return (
@@ -140,9 +154,15 @@ export default function ChessBoard({
         {piece && (
           <span
             style={{
-              fontSize: '40px',
+              fontSize: '48px',
               userSelect: 'none',
-              filter: isSelected ? 'drop-shadow(0 0 4px rgba(139, 92, 246, 0.8))' : 'none',
+              filter: isSelected 
+                ? 'drop-shadow(0 0 8px rgba(5, 150, 105, 0.9))' 
+                : hovered 
+                ? 'drop-shadow(0 0 4px rgba(0, 0, 0, 0.3))'
+                : 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))',
+              transition: 'all 0.2s ease',
+              cursor: disabled ? 'not-allowed' : 'grab',
             }}
           >
             {getPieceSymbol(piece)}
@@ -151,11 +171,23 @@ export default function ChessBoard({
         {isValid && !piece && (
           <div
             style={{
-              width: '20px',
-              height: '20px',
+              width: '24px',
+              height: '24px',
               borderRadius: '50%',
-              backgroundColor: 'rgba(139, 92, 246, 0.6)',
+              backgroundColor: hovered ? 'rgba(5, 150, 105, 0.8)' : 'rgba(5, 150, 105, 0.5)',
               position: 'absolute',
+              transition: 'all 0.2s ease',
+            }}
+          />
+        )}
+        {isValid && piece && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              borderRadius: '50%',
+              border: '3px solid rgba(5, 150, 105, 0.6)',
+              pointerEvents: 'none',
             }}
           />
         )}
@@ -170,20 +202,82 @@ export default function ChessBoard({
     <div
       style={{
         display: 'inline-block',
-        border: '3px solid #2a2a3a',
-        borderRadius: '8px',
+        border: '4px solid rgba(42, 42, 58, 0.8)',
+        borderRadius: '12px',
         overflow: 'hidden',
-        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)',
+        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+        background: 'linear-gradient(135deg, rgba(26, 26, 26, 0.9) 0%, rgba(17, 17, 17, 0.9) 100%)',
+        padding: '8px',
       }}
     >
+      {/* File labels (a-h) */}
       <div
         style={{
           display: 'grid',
           gridTemplateColumns: `repeat(8, ${SQUARE_SIZE}px)`,
-          gridTemplateRows: `repeat(8, ${SQUARE_SIZE}px)`,
+          paddingBottom: '4px',
+          paddingLeft: '4px',
         }}
       >
-        {rows.map((row) => cols.map((col) => renderSquare(row, col)))}
+        {cols.map((col) => (
+          <div
+            key={`file-${col}`}
+            style={{
+              textAlign: 'center',
+              fontSize: '12px',
+              fontWeight: 'bold',
+              color: 'rgba(163, 163, 163, 0.8)',
+              userSelect: 'none',
+            }}
+          >
+            {getFileLabel(col)}
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex' }}>
+        {/* Rank labels (1-8) */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-around',
+            paddingRight: '4px',
+            paddingTop: '4px',
+          }}
+        >
+          {rows.map((row) => (
+            <div
+              key={`rank-${row}`}
+              style={{
+                height: `${SQUARE_SIZE}px`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                color: 'rgba(163, 163, 163, 0.8)',
+                userSelect: 'none',
+              }}
+            >
+              {getRankLabel(row)}
+            </div>
+          ))}
+        </div>
+
+        {/* Board */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(8, ${SQUARE_SIZE}px)`,
+            gridTemplateRows: `repeat(8, ${SQUARE_SIZE}px)`,
+            border: '2px solid rgba(42, 42, 58, 0.6)',
+            borderRadius: '8px',
+            overflow: 'hidden',
+          }}
+        >
+          {rows.map((row) => cols.map((col) => renderSquare(row, col)))}
+        </div>
       </div>
     </div>
   );

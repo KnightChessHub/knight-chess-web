@@ -65,102 +65,102 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-8 animate-fade-in">
       {/* Welcome Section */}
-      <div>
-        <h1 className="text-2xl font-semibold mb-2">
-          Welcome back, <span className="text-primary">{user?.username}</span>
+      <div className="animate-slide-up">
+        <h1 className="text-3xl font-bold mb-3 tracking-tight">
+          Welcome back, <span className="text-primary bg-gradient-to-r from-primary to-primary-light bg-clip-text text-transparent">{user?.username}</span>
         </h1>
-        <p className="text-text-secondary">Ready for your next game?</p>
+        <p className="text-text-secondary text-lg">Ready for your next game?</p>
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+        <Card className="animate-scale-in" style={{ animationDelay: '0.1s' }}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-text-secondary text-sm mb-1">Rating</p>
-              <p className="text-3xl font-semibold text-primary">{rating?.rating || 1200}</p>
+              <p className="text-text-secondary text-sm mb-2 font-medium">Rating</p>
+              <p className="text-4xl font-bold text-primary tracking-tight">{rating?.rating || 1200}</p>
             </div>
-            <div className="w-12 h-12 bg-primary-light rounded-lg flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-primary" />
+            <div className="w-14 h-14 bg-primary-light rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+              <TrendingUp className="w-7 h-7 text-primary" />
             </div>
           </div>
         </Card>
 
-        <Card>
+        <Card className="animate-scale-in" style={{ animationDelay: '0.2s' }}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-text-secondary text-sm mb-1">Games Played</p>
-              <p className="text-3xl font-semibold text-secondary">{statistics?.totalGames || 0}</p>
+              <p className="text-text-secondary text-sm mb-2 font-medium">Games Played</p>
+              <p className="text-4xl font-bold text-secondary tracking-tight">{statistics?.totalGames || 0}</p>
             </div>
-            <div className="w-12 h-12 bg-secondary-light rounded-lg flex items-center justify-center">
-              <Trophy className="w-6 h-6 text-secondary" />
+            <div className="w-14 h-14 bg-secondary-light rounded-xl flex items-center justify-center shadow-lg shadow-secondary/20">
+              <Trophy className="w-7 h-7 text-secondary" />
             </div>
           </div>
         </Card>
 
-        <Card>
+        <Card className="animate-scale-in" style={{ animationDelay: '0.3s' }}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-text-secondary text-sm mb-1">Win Rate</p>
-              <p className="text-3xl font-semibold text-success">
+              <p className="text-text-secondary text-sm mb-2 font-medium">Win Rate</p>
+              <p className="text-4xl font-bold text-success tracking-tight">
                 {statistics ? Math.round(statistics.winRate) : 0}%
               </p>
             </div>
-            <div className="w-12 h-12 bg-success-light rounded-lg flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-success" />
+            <div className="w-14 h-14 bg-success-light rounded-xl flex items-center justify-center shadow-lg shadow-success/20">
+              <TrendingUp className="w-7 h-7 text-success" />
             </div>
           </div>
         </Card>
 
-        <Card>
+        <Card className="animate-scale-in" style={{ animationDelay: '0.4s' }}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-text-secondary text-sm mb-1">Wins</p>
-              <p className="text-3xl font-semibold text-accent">{statistics?.wins || 0}</p>
+              <p className="text-text-secondary text-sm mb-2 font-medium">Wins</p>
+              <p className="text-4xl font-bold text-accent tracking-tight">{statistics?.wins || 0}</p>
             </div>
-            <div className="w-12 h-12 bg-accent-light rounded-lg flex items-center justify-center">
-              <Trophy className="w-6 h-6 text-accent" />
+            <div className="w-14 h-14 bg-accent-light rounded-xl flex items-center justify-center shadow-lg shadow-accent/20">
+              <Trophy className="w-7 h-7 text-accent" />
             </div>
           </div>
         </Card>
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Quick Match */}
-        <Card hover>
-          <div className="space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-primary-light rounded-lg flex items-center justify-center flex-shrink-0">
-                <Play className="w-5 h-5 text-primary" />
+        <Card hover className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
+          <div className="space-y-5">
+            <div className="flex items-center gap-5">
+              <div className="w-14 h-14 bg-primary-light rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/20">
+                <Play className="w-7 h-7 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-lg font-semibold">Quick Match</h3>
-                <p className="text-text-secondary text-sm">Find an opponent instantly</p>
+                <h3 className="text-xl font-bold mb-1">Quick Match</h3>
+                <p className="text-text-secondary">Find an opponent instantly</p>
               </div>
             </div>
             <Button onClick={handleQuickMatch} className="w-full" size="lg">
-              <Play className="w-4 h-4" />
+              <Play className="w-5 h-5" />
               Find Opponent
             </Button>
           </div>
         </Card>
 
         {/* Create Game */}
-        <Card hover onClick={() => navigate('/games/new')}>
-          <div className="space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-primary-light rounded-lg flex items-center justify-center flex-shrink-0">
-                <Clock className="w-5 h-5 text-primary" />
+        <Card hover onClick={() => navigate('/games/new')} className="animate-slide-up" style={{ animationDelay: '0.3s' }}>
+          <div className="space-y-5">
+            <div className="flex items-center gap-5">
+              <div className="w-14 h-14 bg-primary-light rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/20">
+                <Clock className="w-7 h-7 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-lg font-semibold">Create Game</h3>
-                <p className="text-text-secondary text-sm">Start a custom game</p>
+                <h3 className="text-xl font-bold mb-1">Create Game</h3>
+                <p className="text-text-secondary">Start a custom game</p>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               {timeControls.map((tc) => (
                 <Button
                   key={tc.label}
@@ -182,16 +182,16 @@ export default function Dashboard() {
       {/* Upcoming Tournaments */}
       {upcomingTournaments.length > 0 && (
         <Card>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-primary flex-shrink-0" />
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold flex items-center gap-3">
+              <Trophy className="w-6 h-6 text-primary flex-shrink-0" />
               <span>Upcoming Tournaments</span>
             </h2>
             <Button variant="ghost" size="sm" onClick={() => navigate('/tournaments')}>
               View All
             </Button>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {upcomingTournaments.map((tournament) => (
               <div
                 key={tournament._id}
@@ -200,8 +200,8 @@ export default function Dashboard() {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold text-lg">{tournament.name}</h3>
-                    <p className="text-text-secondary text-sm">
+                    <h3 className="font-bold text-xl mb-1">{tournament.name}</h3>
+                    <p className="text-text-secondary">
                       {(tournament.participants || []).length} / {tournament.maxParticipants} participants
                     </p>
                   </div>

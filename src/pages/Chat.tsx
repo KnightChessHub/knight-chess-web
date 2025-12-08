@@ -92,11 +92,11 @@ export default function Chat() {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-12rem)] animate-fade-in">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-12rem)] animate-fade-in">
       {/* Conversations List */}
-      <Card className="overflow-hidden flex flex-col">
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <MessageSquare className="w-5 h-5 text-primary flex-shrink-0" />
+      <Card className="overflow-hidden flex flex-col animate-scale-in" style={{ animationDelay: '0.1s' }}>
+        <h2 className="text-xl font-bold mb-5 flex items-center gap-3">
+          <MessageSquare className="w-6 h-6 text-primary flex-shrink-0" />
           <span>Conversations</span>
         </h2>
         <div className="flex-1 overflow-y-auto space-y-2">
@@ -117,7 +117,7 @@ export default function Chat() {
                   }`}
                 >
                   <p className="font-semibold">{conv.senderUsername || 'User'}</p>
-                  <p className="text-text-secondary text-sm truncate">{conv.message}</p>
+                  <p className="text-text-secondary text-sm truncate">{conv.message || 'No message'}</p>
                 </div>
               );
             })
@@ -126,37 +126,43 @@ export default function Chat() {
       </Card>
 
       {/* Chat Area */}
-      <Card className="lg:col-span-2 flex flex-col">
+      <Card className="lg:col-span-2 flex flex-col animate-scale-in" style={{ animationDelay: '0.2s' }}>
         {selectedUser ? (
           <>
-            <div className="mb-4 pb-4 border-b border-border">
-              <h3 className="text-lg font-bold">Chat</h3>
+            <div className="mb-5 pb-5 border-b border-border">
+              <h3 className="text-xl font-bold">Chat</h3>
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto space-y-4 mb-4">
-              {messages.map((msg) => {
-                const isMine = msg.senderId === user?._id;
-                return (
-                  <div
-                    key={msg._id}
-                    className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}
-                  >
+            <div className="flex-1 overflow-y-auto space-y-4 mb-5">
+              {messages.length === 0 ? (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-text-secondary">No messages yet. Start the conversation!</p>
+                </div>
+              ) : (
+                messages.map((msg) => {
+                  const isMine = msg.senderId === user?._id;
+                  return (
                     <div
-                      className={`max-w-[70%] p-3 rounded-lg ${
-                        isMine
-                          ? 'bg-primary text-white'
-                          : 'bg-bg-tertiary text-text-primary'
-                      }`}
+                      key={msg._id || Math.random()}
+                      className={`flex ${isMine ? 'justify-end' : 'justify-start'} animate-slide-up`}
                     >
-                      <p>{msg.message}</p>
-                      <p className="text-xs mt-1 opacity-70">
-                        {new Date(msg.createdAt).toLocaleTimeString()}
-                      </p>
+                      <div
+                        className={`max-w-[70%] p-4 rounded-xl shadow-lg ${
+                          isMine
+                            ? 'bg-primary text-white'
+                            : 'bg-bg-tertiary text-text-primary'
+                        }`}
+                      >
+                        <p className="font-medium">{msg.message || 'Empty message'}</p>
+                        <p className={`text-xs mt-2 ${isMine ? 'opacity-80' : 'opacity-60'}`}>
+                          {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString() : 'Now'}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
               <div ref={messagesEndRef} />
             </div>
 

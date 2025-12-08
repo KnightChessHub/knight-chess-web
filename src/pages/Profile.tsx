@@ -62,30 +62,30 @@ export default function Profile() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-8 animate-fade-in">
       {/* Profile Header */}
-      <Card>
+      <Card className="animate-slide-up">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="flex items-center gap-6">
-            <div className="w-24 h-24 bg-bg-tertiary border border-border rounded-xl flex items-center justify-center text-4xl font-semibold text-text-primary">
-              {user?.username?.[0]?.toUpperCase() || 'U'}
+            <div className="w-28 h-28 bg-primary rounded-2xl flex items-center justify-center text-5xl font-bold text-white shadow-xl shadow-primary/40">
+              {(user?.username || 'U')[0]?.toUpperCase() || 'U'}
             </div>
             <div>
               {isEditing ? (
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <input
                     type="text"
                     value={editUsername}
                     onChange={(e) => setEditUsername(e.target.value)}
-                    className="px-4 py-2 bg-bg-tertiary border border-border rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-border"
+                    className="px-5 py-3 bg-bg-tertiary border border-border rounded-xl text-text-primary focus:outline-none focus:ring-2 focus:ring-primary w-full"
                   />
                   <div className="flex gap-3">
-                    <Button size="sm" onClick={handleUpdateProfile}>
+                    <Button size="md" onClick={handleUpdateProfile}>
                       Save
                     </Button>
                     <Button
                       variant="ghost"
-                      size="sm"
+                      size="md"
                       onClick={() => {
                         setIsEditing(false);
                         setEditUsername(user?.username || '');
@@ -97,18 +97,18 @@ export default function Profile() {
                 </div>
               ) : (
                 <>
-                  <h1 className="text-3xl font-bold mb-1">{user?.username}</h1>
-                  <p className="text-text-secondary">{user?.email}</p>
-                  <p className="text-text-tertiary text-sm mt-1">
-                    Member since {new Date(user?.createdAt || '').toLocaleDateString()}
+                  <h1 className="text-4xl font-bold mb-2 tracking-tight">{user?.username || 'User'}</h1>
+                  <p className="text-text-secondary text-lg">{user?.email || 'No email'}</p>
+                  <p className="text-text-tertiary mt-2">
+                    Member since {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown'}
                   </p>
                 </>
               )}
             </div>
           </div>
           {!isEditing && (
-            <Button variant="ghost" onClick={() => setIsEditing(true)}>
-              <User className="w-4 h-4 mr-2" />
+            <Button variant="ghost" onClick={() => setIsEditing(true)} size="lg">
+              <User className="w-5 h-5" />
               Edit Profile
             </Button>
           )}
@@ -117,53 +117,53 @@ export default function Profile() {
 
       {/* Statistics Grid */}
       {statistics && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="animate-scale-in" style={{ animationDelay: '0.1s' }}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-text-secondary text-sm mb-1">Total Games</p>
-                <p className="text-3xl font-semibold text-text-primary">{statistics.totalGames}</p>
+                <p className="text-text-secondary text-sm mb-2 font-medium">Total Games</p>
+                <p className="text-4xl font-bold text-text-primary tracking-tight">{statistics.totalGames || 0}</p>
               </div>
-              <div className="w-12 h-12 bg-bg-tertiary rounded-lg flex items-center justify-center">
-                <BarChart3 className="w-6 h-6 text-text-secondary" />
+              <div className="w-14 h-14 bg-primary-light rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+                <BarChart3 className="w-7 h-7 text-primary" />
               </div>
             </div>
           </Card>
 
-          <Card>
+          <Card className="animate-scale-in" style={{ animationDelay: '0.2s' }}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-text-secondary text-sm mb-1">Win Rate</p>
-                <p className="text-3xl font-semibold text-text-primary">
-                  {Math.round(statistics.winRate)}%
+                <p className="text-text-secondary text-sm mb-2 font-medium">Win Rate</p>
+                <p className="text-4xl font-bold text-success tracking-tight">
+                  {Math.round(statistics.winRate || 0)}%
                 </p>
               </div>
-              <div className="w-12 h-12 bg-bg-tertiary rounded-lg flex items-center justify-center">
-                <Target className="w-6 h-6 text-text-secondary" />
+              <div className="w-14 h-14 bg-success-light rounded-xl flex items-center justify-center shadow-lg shadow-success/20">
+                <Target className="w-7 h-7 text-success" />
               </div>
             </div>
           </Card>
 
-          <Card>
+          <Card className="animate-scale-in" style={{ animationDelay: '0.3s' }}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-text-secondary text-sm mb-1">Wins</p>
-                <p className="text-3xl font-semibold text-text-primary">{statistics.wins}</p>
+                <p className="text-text-secondary text-sm mb-2 font-medium">Wins</p>
+                <p className="text-4xl font-bold text-primary tracking-tight">{statistics.wins || 0}</p>
               </div>
-              <div className="w-12 h-12 bg-bg-tertiary rounded-lg flex items-center justify-center">
-                <Trophy className="w-6 h-6 text-text-secondary" />
+              <div className="w-14 h-14 bg-primary-light rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+                <Trophy className="w-7 h-7 text-primary" />
               </div>
             </div>
           </Card>
 
-          <Card>
+          <Card className="animate-scale-in" style={{ animationDelay: '0.4s' }}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-text-secondary text-sm mb-1">Best Streak</p>
-                <p className="text-3xl font-bold text-secondary">{statistics.bestStreak}</p>
+                <p className="text-text-secondary text-sm mb-2 font-medium">Best Streak</p>
+                <p className="text-4xl font-bold text-secondary tracking-tight">{statistics.bestStreak || 0}</p>
               </div>
-              <div className="w-12 h-12 bg-secondary-light rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-secondary" />
+              <div className="w-14 h-14 bg-secondary-light rounded-xl flex items-center justify-center shadow-lg shadow-secondary/20">
+                <TrendingUp className="w-7 h-7 text-secondary" />
               </div>
             </div>
           </Card>

@@ -47,20 +47,20 @@ export default function Register() {
     <div className="min-h-screen flex items-center justify-center bg-bg-primary" style={{ padding: '2rem 1.5rem' }}>
       <div className="w-full max-w-md">
         {/* Logo and Title */}
-        <div className="text-center" style={{ marginBottom: '2rem' }}>
-          <div className="flex items-center justify-center" style={{ gap: '0.75rem', marginBottom: '1rem' }}>
-            <div className="w-14 h-14 bg-primary rounded-xl flex items-center justify-center flex-shrink-0">
-              <span className="text-2xl text-white font-bold leading-none">♘</span>
+        <div className="text-center animate-slide-up" style={{ marginBottom: '2.5rem' }}>
+          <div className="flex items-center justify-center mb-4" style={{ gap: '1rem' }}>
+            <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/30 animate-glow">
+              <span className="text-3xl text-white font-bold leading-none">♘</span>
             </div>
-            <h1 className="text-3xl font-semibold text-text-primary">KnightChess</h1>
+            <h1 className="text-4xl font-bold text-text-primary tracking-tight">KnightChess</h1>
           </div>
-          <h2 className="text-xl font-semibold text-text-primary" style={{ marginBottom: '0.25rem' }}>Create your account</h2>
-          <p className="text-text-secondary text-sm">Join thousands of chess players worldwide</p>
+          <h2 className="text-2xl font-bold text-text-primary mb-2">Create your account</h2>
+          <p className="text-text-secondary">Join thousands of chess players worldwide</p>
         </div>
 
         {/* Registration Form */}
-        <div className="glass-form rounded-xl" style={{ padding: '2rem' }}>
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <div className="glass-form rounded-2xl animate-scale-in" style={{ padding: '2.5rem' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div>
               <Input
                 label="Username"
