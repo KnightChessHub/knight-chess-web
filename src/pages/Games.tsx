@@ -69,11 +69,11 @@ export default function Games() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between" style={{ marginBottom: '1rem' }}>
         <div>
-          <h1 className="text-2xl font-semibold mb-1">Games</h1>
+          <h1 className="text-2xl font-semibold" style={{ marginBottom: '0.25rem' }}>Games</h1>
           <p className="text-text-secondary">Play, watch, and analyze chess games</p>
         </div>
         <Button onClick={() => navigate('/games/new')} size="lg">
@@ -83,7 +83,7 @@ export default function Games() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap" style={{ gap: '0.75rem' }}>
         {(['all', 'active', 'waiting', 'finished'] as const).map((f) => (
           <Button
             key={f}
@@ -98,8 +98,8 @@ export default function Games() {
 
       {/* Quick Create */}
       <Card>
-        <h3 className="text-lg font-semibold mb-5">Quick Create</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <h3 className="text-lg font-semibold" style={{ marginBottom: '1.25rem' }}>Quick Create</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4" style={{ gap: '1rem' }}>
           {[
             { label: 'Bullet', initial: 60, increment: 0 },
             { label: 'Blitz', initial: 300, increment: 0 },
@@ -128,7 +128,7 @@ export default function Games() {
           </div>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" style={{ gap: '1rem' }}>
           {games.map((game) => {
             const isPlayer = game.whitePlayer === user?._id || game.blackPlayer === user?._id;
             return (
@@ -138,7 +138,7 @@ export default function Games() {
                 onClick={() => navigate(`/games/${game._id}`)}
                 className="cursor-pointer"
               >
-                <div className="space-y-4">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <div className="flex items-center justify-between">
                     <span className={`text-sm font-semibold ${getStatusColor(game.status)}`}>
                       {game.status.toUpperCase()}
@@ -150,7 +150,7 @@ export default function Games() {
                     )}
                   </div>
 
-                  <div className="space-y-2">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     <div className="flex items-center space-x-2 text-sm">
                       <Users className="w-4 h-4 text-text-secondary" />
                       <span className="text-text-secondary">vs</span>

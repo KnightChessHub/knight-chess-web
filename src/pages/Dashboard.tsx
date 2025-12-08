@@ -65,17 +65,17 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in" style={{ gap: '1.5rem' }}>
       {/* Welcome Section */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold mb-2">
+      <div style={{ marginBottom: '1.5rem' }}>
+        <h1 className="text-2xl font-semibold" style={{ marginBottom: '0.5rem' }}>
           Welcome back, <span className="text-primary">{user?.username}</span>
         </h1>
         <p className="text-text-secondary">Ready for your next game?</p>
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: '1rem' }}>
         <Card>
           <div className="flex items-center justify-between">
             <div>
@@ -128,10 +128,10 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2" style={{ gap: '1rem' }}>
         {/* Quick Match */}
         <Card hover>
-          <div className="space-y-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-primary-light rounded-lg flex items-center justify-center flex-shrink-0">
                 <Play className="w-5 h-5 text-primary" />
@@ -160,7 +160,7 @@ export default function Dashboard() {
                 <p className="text-text-secondary text-sm">Start a custom game</p>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2" style={{ gap: '0.5rem' }}>
               {timeControls.map((tc) => (
                 <Button
                   key={tc.label}
@@ -182,8 +182,8 @@ export default function Dashboard() {
       {/* Upcoming Tournaments */}
       {upcomingTournaments.length > 0 && (
         <Card>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold flex items-center gap-2">
+          <div className="flex items-center justify-between" style={{ marginBottom: '1rem' }}>
+            <h2 className="text-xl font-semibold flex items-center" style={{ gap: '0.5rem' }}>
               <Trophy className="w-5 h-5 text-primary flex-shrink-0" />
               <span>Upcoming Tournaments</span>
             </h2>
@@ -191,7 +191,7 @@ export default function Dashboard() {
               View All
             </Button>
           </div>
-          <div className="space-y-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {upcomingTournaments.map((tournament) => (
               <div
                 key={tournament._id}

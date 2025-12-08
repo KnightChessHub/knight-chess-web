@@ -14,6 +14,7 @@ export default function Card({ children, className = '', hover = false, onClick 
         hover ? 'glass-hover cursor-pointer' : ''
       } ${onClick ? 'cursor-pointer' : ''} ${className}`}
       onClick={onClick}
+      style={{ padding: '1.5rem' }}
     >
       {children}
     </div>

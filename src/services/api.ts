@@ -53,124 +53,179 @@ class ApiService {
     );
   }
 
+  // Helper to normalize API responses
+  private normalizeResponse<T>(data: any, key: string): T {
+    if (data && typeof data === 'object') {
+      // Handle { success: true, data: { [key]: value } } structure
+      if ('data' in data && data.data && typeof data.data === 'object') {
+        if (key in data.data) {
+          return data.data[key];
+        }
+        return data.data as T;
+      }
+      // Handle { [key]: value } structure
+      if (key in data) {
+        return data[key];
+      }
+      // Return as-is if structure doesn't match
+      return data as T;
+    }
+    return data as T;
+  }
+
+  private normalizeArrayResponse<T>(data: any, key: string): T[] {
+    const normalized = this.normalizeResponse<T[]>(data, key);
+    return Array.isArray(normalized) ? normalized : [];
+  }
+
   // Auth
   async register(username: string, email: string, password: string): Promise<AuthResponse> {
-    const { data } = await this.api.post<AuthResponse>('/auth/register', {
+    const { data } = await this.api.post<{ success: boolean; data: AuthResponse }>('/auth/register', {
       username,
       email,
       password,
     });
-    return data;
+    return data.data || data;
   }
 
   async login(email: string, password: string): Promise<AuthResponse> {
-    const { data } = await this.api.post<AuthResponse>('/auth/login', {
+    const { data } = await this.api.post<{ success: boolean; data: AuthResponse }>('/auth/login', {
       email,
       password,
     });
-    return data;
+    return data.data || data;
   }
 
   async verifyToken(): Promise<User> {
-    const { data } = await this.api.get<{ user: User }>('/auth/verify');
-    return data.user;
+    const { data } = await this.api.get<{ success: boolean; data: { user: User } } | { user: User }>('/auth/verify');
+    if ('data' in data && data.data) {
+      return data.data.user;
+    }
+    return (data as { user: User }).user;
   }
 
   // Users
   async getCurrentUser(): Promise<User> {
-    const { data } = await this.api.get<{ user: User }>('/users/me');
-    return data.user;
+    const { data } = await this.api.get<{ success: boolean; data: { user: User } } | { user: User }>('/users/me');
+    if ('data' in data && data.data) {
+      return data.data.user;
+    }
+    return (data as { user: User }).user;
   }
 
   async getUser(userId: string): Promise<User> {
-    const { data } = await this.api.get<{ user: User }>(`/users/${userId}`);
-    return data.user;
+    const { data } = await this.api.get<{ success: boolean; data: { user: User } } | { user: User }>(`/users/${userId}`);
+    if ('data' in data && data.data) {
+      return data.data.user;
+    }
+    return (data as { user: User }).user;
   }
 
   async updateUser(updates: Partial<User>): Promise<User> {
-    const { data } = await this.api.put<{ user: User }>('/users/me', updates);
-    return data.user;
+    const { data } = await this.api.put<{ success: boolean; data: { user: User } } | { user: User }>('/users/me', updates);
+    if ('data' in data && data.data) {
+      return data.data.user;
+    }
+    return (data as { user: User }).user;
   }
 
   // Games
   async createGame(timeControl: { initial: number; increment: number }): Promise<Game> {
-    const { data } = await this.api.post<{ game: Game }>('/games', { timeControl });
-    return data.game;
+    const { data } = await this.api.post<{ success: boolean; data: { game: Game } } | { game: Game }>('/games', { timeControl });
+    if ('data' in data && data.data) {
+      return data.data.game;
+    }
+    return (data as { game: Game }).game;
   }
 
   async getGames(params?: { status?: string; limit?: number }): Promise<Game[]> {
-    const { data } = await this.api.get<{ games: Game[] }>('/games', { params });
-    return data.games;
+    const { data } = await this.api.get<{ success: boolean; data: { games: Game[] } } | { games: Game[] }>('/games', { params });
+    if ('data' in data && data.data) {
+      return data.data.games;
+    }
+    return (data as { games: Game[] }).games || [];
   }
 
   async getGame(gameId: string): Promise<Game> {
-    const { data } = await this.api.get<{ game: Game }>(`/games/${gameId}`);
-    return data.game;
+    const { data } = await this.api.get<{ success: boolean; data: { game: Game } } | { game: Game }>(`/games/${gameId}`);
+    if ('data' in data && data.data) {
+      return data.data.game;
+    }
+    return (data as { game: Game }).game;
   }
 
   async makeMove(gameId: string, move: string): Promise<Game> {
-    const { data } = await this.api.post<{ game: Game }>(`/games/${gameId}/move`, { move });
-    return data.game;
+    const { data } = await this.api.post<{ success: boolean; data: { game: Game } } | { game: Game }>(`/games/${gameId}/move`, { move });
+    if ('data' in data && data.data) {
+      return data.data.game;
+    }
+    return (data as { game: Game }).game;
   }
 
   async joinGame(gameId: string): Promise<Game> {
-    const { data } = await this.api.post<{ game: Game }>(`/games/${gameId}/join`);
-    return data.game;
+    const { data } = await this.api.post<{ success: boolean; data: { game: Game } } | { game: Game }>(`/games/${gameId}/join`);
+    if ('data' in data && data.data) {
+      return data.data.game;
+    }
+    return (data as { game: Game }).game;
   }
 
   async resignGame(gameId: string): Promise<Game> {
-    const { data } = await this.api.post<{ game: Game }>(`/games/${gameId}/resign`);
-    return data.game;
+    const { data } = await this.api.post<{ success: boolean; data: { game: Game } } | { game: Game }>(`/games/${gameId}/resign`);
+    if ('data' in data && data.data) {
+      return data.data.game;
+    }
+    return (data as { game: Game }).game;
   }
 
   // Tournaments
   async createTournament(tournament: Partial<Tournament>): Promise<Tournament> {
-    const { data } = await this.api.post<{ tournament: Tournament }>('/tournaments', tournament);
-    return data.tournament;
+    const { data } = await this.api.post('/tournaments', tournament);
+    return this.normalizeResponse<Tournament>(data, 'tournament');
   }
 
   async getTournaments(params?: { status?: string }): Promise<Tournament[]> {
-    const { data } = await this.api.get<{ tournaments: Tournament[] }>('/tournaments', { params });
-    return data.tournaments;
+    const { data } = await this.api.get('/tournaments', { params });
+    return this.normalizeArrayResponse<Tournament>(data, 'tournaments');
   }
 
   async getTournament(tournamentId: string): Promise<Tournament> {
-    const { data } = await this.api.get<{ tournament: Tournament }>(`/tournaments/${tournamentId}`);
-    return data.tournament;
+    const { data } = await this.api.get(`/tournaments/${tournamentId}`);
+    return this.normalizeResponse<Tournament>(data, 'tournament');
   }
 
   async joinTournament(tournamentId: string): Promise<Tournament> {
-    const { data } = await this.api.post<{ tournament: Tournament }>(`/tournaments/${tournamentId}/join`);
-    return data.tournament;
+    const { data } = await this.api.post(`/tournaments/${tournamentId}/join`);
+    return this.normalizeResponse<Tournament>(data, 'tournament');
   }
 
   async leaveTournament(tournamentId: string): Promise<Tournament> {
-    const { data } = await this.api.post<{ tournament: Tournament }>(`/tournaments/${tournamentId}/leave`);
-    return data.tournament;
+    const { data } = await this.api.post(`/tournaments/${tournamentId}/leave`);
+    return this.normalizeResponse<Tournament>(data, 'tournament');
   }
 
   // Ratings
   async getLeaderboard(category?: string, limit?: number): Promise<Rating[]> {
-    const { data } = await this.api.get<{ leaderboard: Rating[] }>('/ratings/leaderboard', {
+    const { data } = await this.api.get('/ratings/leaderboard', {
       params: { category, limit },
     });
-    return data.leaderboard;
+    return this.normalizeArrayResponse<Rating>(data, 'leaderboard');
   }
 
   async getUserRating(userId?: string): Promise<Rating> {
-    const { data } = await this.api.get<{ rating: Rating }>(`/ratings/${userId || ''}`);
-    return data.rating;
+    const { data } = await this.api.get(`/ratings/${userId || ''}`);
+    return this.normalizeResponse<Rating>(data, 'rating');
   }
 
   // Notifications
   async getNotifications(): Promise<Notification[]> {
-    const { data } = await this.api.get<{ notifications: Notification[] }>('/notifications');
-    return data.notifications;
+    const { data } = await this.api.get('/notifications');
+    return this.normalizeArrayResponse<Notification>(data, 'notifications');
   }
 
   async getUnreadCount(): Promise<number> {
-    const { data } = await this.api.get<{ count: number }>('/notifications/unread/count');
-    return data.count;
+    const { data } = await this.api.get('/notifications/unread/count');
+    return this.normalizeResponse<number>(data, 'count') || 0;
   }
 
   async markNotificationRead(notificationId: string): Promise<void> {
@@ -187,34 +242,34 @@ class ApiService {
 
   // Chat
   async sendMessage(receiverId: string, message: string): Promise<ChatMessage> {
-    const { data } = await this.api.post<{ message: ChatMessage }>('/chat', {
+    const { data } = await this.api.post('/chat', {
       receiverId,
       message,
     });
-    return data.message;
+    return this.normalizeResponse<ChatMessage>(data, 'message');
   }
 
   async getConversations(): Promise<ChatMessage[]> {
-    const { data } = await this.api.get<{ conversations: ChatMessage[] }>('/chat/conversations');
-    return data.conversations;
+    const { data } = await this.api.get('/chat/conversations');
+    return this.normalizeArrayResponse<ChatMessage>(data, 'conversations');
   }
 
   async getConversation(userId: string, limit?: number): Promise<ChatMessage[]> {
-    const { data } = await this.api.get<{ messages: ChatMessage[] }>(`/chat/conversations/${userId}`, {
+    const { data } = await this.api.get(`/chat/conversations/${userId}`, {
       params: { limit },
     });
-    return data.messages;
+    return this.normalizeArrayResponse<ChatMessage>(data, 'messages');
   }
 
   // Friends
   async sendFriendRequest(userId: string): Promise<FriendRequest> {
-    const { data } = await this.api.post<{ request: FriendRequest }>('/friends/request', { userId });
-    return data.request;
+    const { data } = await this.api.post('/friends/request', { userId });
+    return this.normalizeResponse<FriendRequest>(data, 'request');
   }
 
   async getFriendRequests(): Promise<FriendRequest[]> {
-    const { data } = await this.api.get<{ requests: FriendRequest[] }>('/friends/requests');
-    return data.requests;
+    const { data } = await this.api.get('/friends/requests');
+    return this.normalizeArrayResponse<FriendRequest>(data, 'requests');
   }
 
   async acceptFriendRequest(requestId: string): Promise<void> {
@@ -226,14 +281,14 @@ class ApiService {
   }
 
   async getFriends(): Promise<User[]> {
-    const { data } = await this.api.get<{ friends: User[] }>('/friends/list');
-    return data.friends;
+    const { data } = await this.api.get('/friends/list');
+    return this.normalizeArrayResponse<User>(data, 'friends');
   }
 
   // Matchmaking
   async joinMatchmakingQueue(timeControl: { initial: number; increment: number }): Promise<MatchmakingQueue> {
-    const { data } = await this.api.post<{ queue: MatchmakingQueue }>('/matchmaking/queue', { timeControl });
-    return data.queue;
+    const { data } = await this.api.post('/matchmaking/queue', { timeControl });
+    return this.normalizeResponse<MatchmakingQueue>(data, 'queue');
   }
 
   async leaveMatchmakingQueue(): Promise<void> {
@@ -241,35 +296,36 @@ class ApiService {
   }
 
   async getMatchmakingStatus(): Promise<MatchmakingQueue | null> {
-    const { data } = await this.api.get<{ queue: MatchmakingQueue | null }>('/matchmaking/queue/status');
-    return data.queue;
+    const { data } = await this.api.get('/matchmaking/queue/status');
+    const queue = this.normalizeResponse<MatchmakingQueue | null>(data, 'queue');
+    return queue || null;
   }
 
   // Statistics
   async getStatistics(userId?: string): Promise<Statistics> {
-    const { data } = await this.api.get<{ statistics: Statistics }>(`/statistics/${userId || ''}`);
-    return data.statistics;
+    const { data } = await this.api.get(`/statistics/${userId || ''}`);
+    return this.normalizeResponse<Statistics>(data, 'statistics');
   }
 
   // Groups
   async createGroup(group: Partial<Group>): Promise<Group> {
-    const { data } = await this.api.post<{ group: Group }>('/groups', group);
-    return data.group;
+    const { data } = await this.api.post('/groups', group);
+    return this.normalizeResponse<Group>(data, 'group');
   }
 
   async getGroups(): Promise<Group[]> {
-    const { data } = await this.api.get<{ groups: Group[] }>('/groups');
-    return data.groups;
+    const { data } = await this.api.get('/groups');
+    return this.normalizeArrayResponse<Group>(data, 'groups');
   }
 
   async getGroup(groupId: string): Promise<Group> {
-    const { data } = await this.api.get<{ group: Group }>(`/groups/${groupId}`);
-    return data.group;
+    const { data } = await this.api.get(`/groups/${groupId}`);
+    return this.normalizeResponse<Group>(data, 'group');
   }
 
   async updateGroup(groupId: string, updates: Partial<Group>): Promise<Group> {
-    const { data } = await this.api.put<{ group: Group }>(`/groups/${groupId}`, updates);
-    return data.group;
+    const { data } = await this.api.put(`/groups/${groupId}`, updates);
+    return this.normalizeResponse<Group>(data, 'group');
   }
 
   async deleteGroup(groupId: string): Promise<void> {
@@ -285,8 +341,8 @@ class ApiService {
   }
 
   async getGroupMembers(groupId: string): Promise<User[]> {
-    const { data } = await this.api.get<{ members: User[] }>(`/groups/${groupId}/members`);
-    return data.members;
+    const { data } = await this.api.get(`/groups/${groupId}/members`);
+    return this.normalizeArrayResponse<User>(data, 'members');
   }
 
   // Search
@@ -298,32 +354,32 @@ class ApiService {
   }
 
   async searchUsers(query: string): Promise<User[]> {
-    const { data } = await this.api.get<{ users: User[] }>('/search/users', {
+    const { data } = await this.api.get('/search/users', {
       params: { q: query },
     });
-    return data.users;
+    return this.normalizeArrayResponse<User>(data, 'users');
   }
 
   // Activity
   async getActivityFeed(): Promise<any[]> {
-    const { data } = await this.api.get<{ activities: any[] }>('/activity/feed');
-    return data.activities;
+    const { data } = await this.api.get('/activity/feed');
+    return this.normalizeArrayResponse<any>(data, 'activities');
   }
 
   async getMyActivity(): Promise<any[]> {
-    const { data } = await this.api.get<{ activities: any[] }>('/activity/my');
-    return data.activities;
+    const { data } = await this.api.get('/activity/my');
+    return this.normalizeArrayResponse<any>(data, 'activities');
   }
 
   async getUserActivity(userId: string, params?: { limit?: number }): Promise<any[]> {
-    const { data } = await this.api.get<{ activities: any[] }>(`/activity/user/${userId}`, { params });
-    return data.activities;
+    const { data } = await this.api.get(`/activity/user/${userId}`, { params });
+    return this.normalizeArrayResponse<any>(data, 'activities');
   }
 
   // Game Replay
   async getReplay(gameId: string): Promise<Game> {
-    const { data } = await this.api.get<{ replay: Game }>(`/replay/${gameId}`);
-    return data.replay;
+    const { data } = await this.api.get(`/replay/${gameId}`);
+    return this.normalizeResponse<Game>(data, 'replay');
   }
 
   // Analysis
@@ -338,8 +394,8 @@ class ApiService {
   }
 
   async getMyAnalyses(): Promise<any[]> {
-    const { data } = await this.api.get<{ analyses: any[] }>('/analysis/my');
-    return data.analyses;
+    const { data } = await this.api.get('/analysis/my');
+    return this.normalizeArrayResponse<any>(data, 'analyses');
   }
 
   // Files
@@ -356,8 +412,8 @@ class ApiService {
   }
 
   async getMyFiles(params?: { limit?: number }): Promise<any[]> {
-    const { data } = await this.api.get<{ files: any[] }>('/files/my', { params });
-    return data.files;
+    const { data } = await this.api.get('/files/my', { params });
+    return this.normalizeArrayResponse<any>(data, 'files');
   }
 
   async getFile(fileId: string): Promise<any> {
@@ -376,13 +432,13 @@ class ApiService {
   }
 
   async getMyReports(): Promise<any[]> {
-    const { data } = await this.api.get<{ reports: any[] }>('/reports/my');
-    return data.reports;
+    const { data } = await this.api.get('/reports/my');
+    return this.normalizeArrayResponse<any>(data, 'reports');
   }
 
   async getReports(params?: { status?: string }): Promise<any[]> {
-    const { data } = await this.api.get<{ reports: any[] }>('/reports', { params });
-    return data.reports;
+    const { data } = await this.api.get('/reports', { params });
+    return this.normalizeArrayResponse<any>(data, 'reports');
   }
 
   async updateReportStatus(reportId: string, status: string): Promise<void> {
@@ -409,13 +465,13 @@ class ApiService {
 
   // Tournaments
   async startTournament(tournamentId: string): Promise<Tournament> {
-    const { data } = await this.api.post<{ tournament: Tournament }>(`/tournaments/${tournamentId}/start`);
-    return data.tournament;
+    const { data } = await this.api.post(`/tournaments/${tournamentId}/start`);
+    return this.normalizeResponse<Tournament>(data, 'tournament');
   }
 
   async getMyTournaments(): Promise<Tournament[]> {
-    const { data } = await this.api.get<{ tournaments: Tournament[] }>('/tournaments/my');
-    return data.tournaments;
+    const { data } = await this.api.get('/tournaments/my');
+    return this.normalizeArrayResponse<Tournament>(data, 'tournaments');
   }
 
   // Friends
@@ -429,8 +485,8 @@ class ApiService {
 
   // Chat
   async getChatUnreadCount(): Promise<number> {
-    const { data } = await this.api.get<{ count: number }>('/chat/unread/count');
-    return data.count;
+    const { data } = await this.api.get('/chat/unread/count');
+    return this.normalizeResponse<number>(data, 'count') || 0;
   }
 
   async markChatMessageRead(messageId: string): Promise<void> {

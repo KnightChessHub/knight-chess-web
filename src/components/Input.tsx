@@ -15,16 +15,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         )}
         <input
           ref={ref}
-          className={`w-full border border-border rounded-lg text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 ${
+          className={`w-full px-4 py-3 border border-border rounded-lg text-text-primary placeholder-text-tertiary bg-bg-tertiary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 ${
             error ? 'border-danger focus:ring-danger' : ''
           } ${className}`}
-          style={{ 
-            padding: '0.75rem 1rem', 
-            width: '100%',
-            background: 'rgba(26, 26, 26, 0.6)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)'
-          }}
           {...props}
         />
         {error && <p className="text-sm text-danger" style={{ marginTop: '0.5rem' }}>{error}</p>}

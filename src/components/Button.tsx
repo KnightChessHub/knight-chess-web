@@ -25,8 +25,8 @@ export default function Button({
       'bg-primary hover:bg-primary-dark text-white font-medium focus:ring-primary transition-all duration-200',
     secondary:
       'bg-secondary hover:bg-secondary-dark text-white font-medium focus:ring-secondary transition-all duration-200',
-    danger: 'bg-danger hover:bg-red-600 text-white font-medium focus:ring-danger transition-all duration-200',
-    ghost: 'bg-transparent hover:glass-light text-text-primary border border-border hover:border-primary transition-all duration-200',
+    danger: 'bg-danger hover:bg-danger-dark text-white font-medium focus:ring-danger transition-all duration-200',
+    ghost: 'bg-bg-tertiary hover:bg-bg-hover text-text-primary border border-border hover:border-primary transition-all duration-200',
   };
 
   const sizes = {
