@@ -16,13 +16,13 @@ export default function GamePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { currentGame, setCurrentGame } = useGameStore();
+  const { setCurrentGame } = useGameStore();
   const [game, setGame] = useState<Game | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isMyTurn, setIsMyTurn] = useState(false);
   const [orientation, setOrientation] = useState<'white' | 'black'>('white');
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const loadGameRef = useRef<() => Promise<void>>();
+  const intervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const loadGameRef = useRef<(() => Promise<void>) | null>(null);
 
   const loadGame = useCallback(async () => {
     if (!id) return;
@@ -96,18 +96,16 @@ export default function GamePage() {
   }, [game?.status, loadGame]);
 
   // WebSocket for real-time updates
-  useWebSocket(id || null, useCallback((data) => {
+  useWebSocket(id || null, useCallback((data: any) => {
     if (data.game) {
       setGame(data.game);
       setCurrentGame(data.game);
     } else if (data.type === 'player_joined') {
       // When a player joins, reload the game to get updated status
       console.log('Player joined, reloading game...');
-      if (loadGameRef.current) {
-        loadGameRef.current();
-      }
+      loadGame();
     }
-  }, [setCurrentGame]));
+  }, [setCurrentGame, loadGame]));
 
   useEffect(() => {
     if (game && user) {

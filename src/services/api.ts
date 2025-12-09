@@ -521,9 +521,7 @@ class ApiService {
         wins: 0,
         losses: 0,
         draws: 0,
-        winRate: 0,
-        timeControl: timeControl || 'all',
-        lastUpdated: new Date().toISOString(),
+        category: (timeControl as 'blitz' | 'rapid' | 'classical' | 'bullet') || 'blitz',
       };
     }
   }

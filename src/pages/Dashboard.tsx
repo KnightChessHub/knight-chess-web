@@ -13,22 +13,18 @@ import {
   Users,
   MessageSquare,
   Zap,
-  Target,
-  Award,
   Activity,
   Gamepad2,
   ChevronRight,
   Crown,
-  Flame,
   BarChart3,
 } from 'lucide-react';
-import type { Statistics, Rating, Tournament, Game, User } from '../types';
+import type { Rating, Tournament, Game, User } from '../types';
 import { toast } from 'react-hot-toast';
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const [statistics, setStatistics] = useState<Statistics | null>(null);
   const [ratings, setRatings] = useState<Record<string, Rating>>({});
   const [upcomingTournaments, setUpcomingTournaments] = useState<Tournament[]>([]);
   const [recentGames, setRecentGames] = useState<Game[]>([]);
@@ -45,13 +41,11 @@ export default function Dashboard() {
       try {
         // Load leaderboard separately to not block other data if it fails
         const [
-          stats,
           tournaments,
           games,
           activities,
           friendsData,
         ] = await Promise.all([
-          apiService.getStatistics().catch(() => null),
           apiService.getTournaments({ status: 'upcoming' }).catch(() => []),
           apiService.getGames({ limit: 5 }).catch(() => []),
           apiService.getActivityFeed().catch(() => []),
@@ -86,7 +80,6 @@ export default function Dashboard() {
           // Silently fail - leaderboard is optional
         }
 
-        setStatistics(stats);
         setRatings(ratingsMap);
         setUpcomingTournaments(Array.isArray(tournaments) ? tournaments.slice(0, 3) : []);
         
@@ -408,6 +401,7 @@ export default function Dashboard() {
                   const isPlayer =
                     game.whitePlayer === user?._id || game.blackPlayer === user?._id;
                   const isWhite = game.whitePlayer === user?._id;
+                  const myUsername = user?.username || 'You';
                   const opponent = isPlayer
                     ? isWhite
                       ? game.blackPlayerUsername

@@ -5,7 +5,7 @@ const WS_URL = import.meta.env.VITE_WS_URL || 'http://localhost:3014';
 
 export function useWebSocket(gameId: string | null, onMessage?: (data: any) => void) {
   const socketRef = useRef<Socket | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!gameId) return;
