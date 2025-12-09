@@ -34,6 +34,10 @@ export default function ChessBoard({
   const [hoveredSquare, setHoveredSquare] = useState<Square | null>(null);
 
   useEffect(() => {
+    console.log('ChessBoard orientation changed to:', orientation);
+  }, [orientation]);
+
+  useEffect(() => {
     if (fen) {
       try {
         const newGame = new Chess(fen);

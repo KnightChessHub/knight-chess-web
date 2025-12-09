@@ -28,7 +28,15 @@ export default function GamePage() {
     if (!id) return;
     try {
       const gameData = await apiService.getGame(id);
-      console.log('Game loaded:', gameData.status, 'blackPlayer:', gameData.blackPlayer);
+      console.log('Game loaded:', {
+        status: gameData.status,
+        whitePlayer: gameData.whitePlayer,
+        blackPlayer: gameData.blackPlayer,
+        currentUser: user?._id,
+        isWhite: gameData.whitePlayer === user?._id,
+        isBlack: gameData.blackPlayer === user?._id,
+        currentTurn: gameData.currentTurn
+      });
       setGame(gameData);
       setCurrentGame(gameData);
     } catch (error) {
@@ -38,7 +46,7 @@ export default function GamePage() {
     } finally {
       setIsLoading(false);
     }
-  }, [id, navigate, setCurrentGame]);
+  }, [id, navigate, setCurrentGame, user]);
 
   // Store loadGame in ref so WebSocket callback can use it
   loadGameRef.current = loadGame;
@@ -80,7 +88,7 @@ export default function GamePage() {
     }
 
     // Setup new interval if game is active or waiting
-    if (game && (game.status === 'active' || game.status === 'waiting')) {
+    if (game && (game.status === 'active' || game.status === 'waiting' || game.status === 'pending')) {
       intervalRef.current = setInterval(() => {
         loadGame();
       }, 2000);
@@ -109,8 +117,18 @@ export default function GamePage() {
 
   useEffect(() => {
     if (game && user) {
-      const isWhitePlayer = game.whitePlayer === user._id;
-      const isBlackPlayer = game.blackPlayer === user._id;
+      // Use string comparison to ensure exact match
+      const isWhitePlayer = String(game.whitePlayer) === String(user._id);
+      const isBlackPlayer = game.blackPlayer ? String(game.blackPlayer) === String(user._id) : false;
+      
+      console.log('Player identification:', {
+        whitePlayer: game.whitePlayer,
+        blackPlayer: game.blackPlayer,
+        userId: user._id,
+        isWhitePlayer,
+        isBlackPlayer,
+        gameType: game.gameType
+      });
       
       // Set orientation:
       // - If user is white player: 'white'
@@ -119,15 +137,18 @@ export default function GamePage() {
       // - If not a player yet: 'white' (default for viewing)
       if (isWhitePlayer) {
         setOrientation('white');
+        console.log('Setting orientation to WHITE');
       } else if (isBlackPlayer) {
         setOrientation('black');
+        console.log('Setting orientation to BLACK');
       } else {
         // Not a player or offline game - default to white
         setOrientation('white');
+        console.log('Setting orientation to WHITE (default)');
       }
       
       // Determine if it's my turn using backend's currentTurn field
-      if (game.status === 'active') {
+      if (game.status === 'active' || game.status === 'waiting' || game.status === 'pending') {
         if (game.gameType === 'offline') {
           // For offline games, user can always move (they play both sides)
           setIsMyTurn(true);
@@ -136,7 +157,7 @@ export default function GamePage() {
             (isWhitePlayer && game.currentTurn === 'white') ||
             (isBlackPlayer && game.currentTurn === 'black');
           setIsMyTurn(isMyTurnNow);
-          console.log('Turn check - isWhite:', isWhitePlayer, 'isBlack:', isBlackPlayer, 'currentTurn:', game.currentTurn, 'isMyTurn:', isMyTurnNow);
+          console.log('Turn check - isWhite:', isWhitePlayer, 'isBlack:', isBlackPlayer, 'currentTurn:', game.currentTurn, 'isMyTurn:', isMyTurnNow, 'status:', game.status);
         } else {
           setIsMyTurn(false);
         }
@@ -201,11 +222,12 @@ export default function GamePage() {
     );
   }
 
-  const isWhitePlayer = game.whitePlayer === user?._id;
-  const isBlackPlayer = game.blackPlayer === user?._id;
+  // Use string comparison to handle ObjectId vs string
+  const isWhitePlayer = String(game.whitePlayer) === String(user?._id);
+  const isBlackPlayer = game.blackPlayer ? String(game.blackPlayer) === String(user?._id) : false;
   const isPlayer = isWhitePlayer || isBlackPlayer;
-  // Can join if: game is waiting, user is not a player, game is online, and black player slot is empty
-  const canJoin = game.status === 'waiting' 
+  // Can join if: game is waiting/pending, user is not a player, game is online, and black player slot is empty
+  const canJoin = (game.status === 'waiting' || game.status === 'pending')
     && !isPlayer 
     && game.gameType === 'online' 
     && !game.blackPlayer;
@@ -236,7 +258,7 @@ export default function GamePage() {
             <p className="text-text-secondary text-lg mt-1">
               {game.status === 'active'
                 ? 'In Progress'
-                : game.status === 'waiting'
+                : (game.status === 'waiting' || game.status === 'pending')
                 ? 'Waiting for Player'
                 : game.status.charAt(0).toUpperCase() + game.status.slice(1)}
             </p>
@@ -288,7 +310,7 @@ export default function GamePage() {
       )}
 
       {/* Waiting for Player Banner */}
-      {game.status === 'waiting' && isWhitePlayer && !game.blackPlayer && (
+      {(game.status === 'waiting' || game.status === 'pending') && isWhitePlayer && !game.blackPlayer && (
         <Card className="bg-warning-light border-2 border-warning animate-slide-up">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -312,7 +334,7 @@ export default function GamePage() {
               fen={game.fen}
               onMove={handleMove}
               orientation={orientation}
-              disabled={game.status !== 'active' || !isMyTurn}
+              disabled={!(game.status === 'active' && isMyTurn)}
             />
           </div>
 
