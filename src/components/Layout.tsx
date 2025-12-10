@@ -29,13 +29,19 @@ export default function Layout({ children }: LayoutProps) {
   const { unreadCount, setUnreadCount } = useNotificationStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Close mobile menu on navigation
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
   useEffect(() => {
     const fetchUnreadCount = async () => {
       try {
         const count = await apiService.getUnreadCount();
-        setUnreadCount(count);
+        setUnreadCount(count || 0);
       } catch (error) {
         console.error('Failed to fetch unread count:', error);
+        setUnreadCount(0);
       }
     };
 
@@ -43,6 +49,8 @@ export default function Layout({ children }: LayoutProps) {
       fetchUnreadCount();
       const interval = setInterval(fetchUnreadCount, 30000); // Poll every 30 seconds
       return () => clearInterval(interval);
+    } else {
+      setUnreadCount(0);
     }
   }, [user, setUnreadCount]);
 
@@ -388,7 +396,7 @@ export default function Layout({ children }: LayoutProps) {
       {moreMenuOpen && typeof document !== 'undefined' && createPortal(
         <div
           ref={moreMenuRef}
-          className="fixed rounded-xl py-2 overflow-hidden"
+          className="fixed rounded-xl py-2 overflow-hidden animate-scale-in"
           style={{
             top: `${dropdownPosition.top}px`,
             left: `${dropdownPosition.left}px`,
@@ -397,10 +405,11 @@ export default function Layout({ children }: LayoutProps) {
             border: '2px solid rgba(5, 150, 105, 0.4)',
             borderRadius: '0.75rem',
             boxShadow: '0 20px 60px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.1)',
-            zIndex: 10000,
+            zIndex: 99999,
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
           }}
+          onClick={(e) => e.stopPropagation()}
         >
           {moreNavItems.map((item) => {
             const Icon = item.icon;

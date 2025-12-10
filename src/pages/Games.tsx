@@ -402,8 +402,17 @@ export default function Games() {
 
       {/* Side Selection Modal */}
       {showSideSelection && selectedTimeControl && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in">
-          <Card className="w-full max-w-md mx-4 animate-scale-in">
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in"
+          onClick={() => {
+            setShowSideSelection(false);
+            setSelectedTimeControl(null);
+          }}
+        >
+          <Card 
+            className="w-full max-w-md mx-4 animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h2 className="text-2xl font-bold mb-4">Choose Your Side</h2>
             <p className="text-text-secondary mb-6">
               Select which color you want to play as for this {selectedTimeControl.label} game

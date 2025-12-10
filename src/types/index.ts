@@ -16,7 +16,7 @@ export interface Game {
   blackPlayerUsername?: string;
   gameType?: 'online' | 'offline'; // Track game type
   currentTurn?: 'white' | 'black'; // Current turn from backend
-  status: 'waiting' | 'active' | 'finished' | 'abandoned';
+  status: 'waiting' | 'active' | 'finished' | 'abandoned' | 'pending'; // Added 'pending'
   result?: 'white' | 'black' | 'draw';
   timeControl: {
     initial: number;
@@ -26,6 +26,8 @@ export interface Game {
   moves: string[];
   createdAt: string;
   updatedAt: string;
+  whiteTime?: number; // Added
+  blackTime?: number; // Added
 }
 
 export interface Tournament {
@@ -36,7 +38,7 @@ export interface Tournament {
   format: 'swiss' | 'round-robin' | 'knockout';
   status: 'upcoming' | 'registration' | 'active' | 'finished';
   maxParticipants: number;
-  participants: string[];
+  participants?: string[]; // Made optional with default empty array
   rounds?: Round[];
   prizePool?: number;
   startDate: string;

@@ -5,7 +5,8 @@ const WS_URL = import.meta.env.VITE_WS_URL || 'http://localhost:3014';
 
 export function useWebSocket(gameId: string | null, onMessage?: (data: any) => void) {
   const socketRef = useRef<Socket | null>(null);
-  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reconnectAttemptsRef = useRef(0);
+  const maxReconnectAttempts = 5;
 
   useEffect(() => {
     if (!gameId) return;
@@ -18,16 +19,22 @@ export function useWebSocket(gameId: string | null, onMessage?: (data: any) => v
 
     let socket: Socket | null = null;
     let isConnected = false;
+    let isIntentionalDisconnect = false;
 
     const connect = () => {
+      if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
+        console.log('Max reconnection attempts reached');
+        return;
+      }
+
       try {
         socket = io(WS_URL, {
           auth: { token },
-          transports: ['websocket', 'polling'], // Fallback to polling if websocket fails
+          transports: ['websocket', 'polling'],
           reconnection: true,
           reconnectionDelay: 1000,
           reconnectionDelayMax: 5000,
-          reconnectionAttempts: 5,
+          reconnectionAttempts: maxReconnectAttempts,
           timeout: 10000,
         });
 
@@ -35,6 +42,7 @@ export function useWebSocket(gameId: string | null, onMessage?: (data: any) => v
 
         socket.on('connect', () => {
           isConnected = true;
+          reconnectAttemptsRef.current = 0;
           console.log('WebSocket connected');
           if (gameId) {
             socket?.emit('join_game', gameId);
@@ -44,16 +52,14 @@ export function useWebSocket(gameId: string | null, onMessage?: (data: any) => v
         socket.on('disconnect', (reason) => {
           isConnected = false;
           console.log('WebSocket disconnected:', reason);
-          // Only try to reconnect if it wasn't a manual disconnect
-          if (reason !== 'io client disconnect') {
-            // Reconnection is handled automatically by socket.io
+          if (!isIntentionalDisconnect && reason !== 'io client disconnect') {
+            reconnectAttemptsRef.current++;
           }
         });
 
         socket.on('connect_error', (error) => {
           console.warn('WebSocket connection error:', error.message);
-          // Don't show error to user - WebSocket is optional for game updates
-          // Game will still work with polling via API
+          reconnectAttemptsRef.current++;
         });
 
         socket.on('game_update', (data) => {
@@ -75,25 +81,20 @@ export function useWebSocket(gameId: string | null, onMessage?: (data: any) => v
         });
 
         socket.on('game:player-joined', (data) => {
-          // When a player joins, trigger a refresh
           if (onMessage && isConnected) {
             console.log('Player joined game:', data);
-            // Trigger a reload by calling onMessage with a flag
             onMessage({ type: 'player_joined', gameId: data.gameId });
           }
         });
       } catch (error) {
         console.warn('Failed to initialize WebSocket:', error);
-        // WebSocket is optional - game will work without it
       }
     };
 
     connect();
 
     return () => {
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
+      isIntentionalDisconnect = true;
       if (socket) {
         try {
           if (gameId && isConnected) {
@@ -101,10 +102,11 @@ export function useWebSocket(gameId: string | null, onMessage?: (data: any) => v
           }
           socket.disconnect();
         } catch (error) {
-          // Ignore cleanup errors
+          console.warn('Error during socket cleanup:', error);
         }
       }
       socketRef.current = null;
+      reconnectAttemptsRef.current = 0;
     };
   }, [gameId, onMessage]);
 
@@ -120,4 +122,3 @@ export function useWebSocket(gameId: string | null, onMessage?: (data: any) => v
 
   return { sendMove };
 }
-

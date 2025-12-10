@@ -321,40 +321,29 @@ class ApiService {
 
   async makeMove(gameId: string, move: string): Promise<Game> {
     try {
-      // Backend expects { from, to, promotion? } in algebraic notation
-      // ChessBoard sends SAN notation (e.g., "e4", "Nf3"), but we need to convert to { from, to }
-      // For now, we'll need to fetch the current game state to parse the move properly
-      // This is a simplified version - in a real app you'd parse SAN on the frontend
+      // Chess.js gives us SAN notation (e.g., "e4", "Nf3")
+      // We need to convert to { from, to, promotion? } for backend
       
-      // Try to parse the move - if it's already in "e2e4" format, use it
+      const currentGame = await this.getGame(gameId);
+      const { Chess } = await import('chess.js');
+      const chess = new Chess(currentGame.fen);
+      
       let moveObj: any;
-      if (move.length === 4 && move.match(/^[a-h][1-8][a-h][1-8]$/)) {
-        // Already in "fromto" format
-        moveObj = { from: move.substring(0, 2), to: move.substring(2, 4) };
-      } else {
-        // SAN notation - backend should handle it, but let's try sending as-is first
-        // If backend needs { from, to }, we'd need to parse SAN using chess.js
-        // For now, send the move string and let backend handle it if possible
-        // Otherwise, we'll need to get the game state and parse the move
-        const currentGame = await this.getGame(gameId);
-        // Use chess.js to parse SAN and get from/to
-        const { Chess } = await import('chess.js');
-        const chess = new Chess(currentGame.fen);
-        try {
-          const moveObj_chess = chess.move(move);
-          if (moveObj_chess) {
-            moveObj = {
-              from: moveObj_chess.from,
-              to: moveObj_chess.to,
-              promotion: moveObj_chess.promotion || undefined,
-            };
-          } else {
-            throw new Error('Invalid move');
+      try {
+        const parsedMove = chess.move(move);
+        if (parsedMove) {
+          moveObj = {
+            from: parsedMove.from,
+            to: parsedMove.to,
+          };
+          if (parsedMove.promotion) {
+            moveObj.promotion = parsedMove.promotion;
           }
-        } catch (parseError) {
-          // Fallback: try to send move as string
-          moveObj = { move };
+        } else {
+          throw new Error('Invalid move');
         }
+      } catch (parseError) {
+        throw new Error('Invalid move: ' + move);
       }
 
       const { data } = await this.api.post<{ success: boolean; data: any }>(`/games/${gameId}/move`, moveObj);
@@ -730,8 +719,14 @@ class ApiService {
 
   // Activity
   async getActivityFeed(): Promise<any[]> {
-    const { data } = await this.api.get('/activity/feed');
-    return this.normalizeArrayResponse<any>(data, 'activities');
+    try {
+      const { data } = await this.api.get('/activity/feed');
+      const activities = this.normalizeArrayResponse<any>(data, 'activities');
+      return Array.isArray(activities) ? activities.filter(item => item != null) : [];
+    } catch (error) {
+      console.error('Failed to load activity feed:', error);
+      return [];
+    }
   }
 
   async getMyActivity(): Promise<any[]> {

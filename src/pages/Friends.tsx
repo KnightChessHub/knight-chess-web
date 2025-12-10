@@ -17,14 +17,18 @@ export default function Friends() {
 
   const loadData = async () => {
     try {
+      setIsLoading(true);
       const [friendsData, requestsData] = await Promise.all([
         apiService.getFriends().catch(() => []),
         apiService.getFriendRequests().catch(() => []),
       ]);
-      setFriends(friendsData);
-      setRequests(requestsData);
+      setFriends(Array.isArray(friendsData) ? friendsData : []);
+      setRequests(Array.isArray(requestsData) ? requestsData : []);
     } catch (error) {
+      console.error('Failed to load friends:', error);
       toast.error('Failed to load friends');
+      setFriends([]);
+      setRequests([]);
     } finally {
       setIsLoading(false);
     }

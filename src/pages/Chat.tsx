@@ -57,7 +57,18 @@ export default function Chat() {
   const loadMessages = async (userId: string) => {
     try {
       const data = await apiService.getConversation(userId, 50);
-      setMessages(data);
+      setMessages(data || []);
+      // Mark messages as read when loading conversation
+      if (data && Array.isArray(data)) {
+        const unreadMessages = data.filter(msg => !msg.read && msg.receiverId === user?._id);
+        for (const msg of unreadMessages) {
+          try {
+            await apiService.markChatMessageRead(msg._id);
+          } catch (error) {
+            console.warn('Failed to mark message as read:', error);
+          }
+        }
+      }
     } catch (error) {
       toast.error('Failed to load messages');
     }

@@ -78,11 +78,12 @@ export default function TournamentDetail() {
     );
   }
 
-  const isParticipant = tournament.participants.includes(user?._id || '');
+  const participants = tournament.participants || [];
+  const isParticipant = participants.includes(user?._id || '');
   const canJoin =
     (tournament.status === 'upcoming' || tournament.status === 'registration') &&
     !isParticipant &&
-    tournament.participants.length < tournament.maxParticipants;
+    participants.length < (tournament.maxParticipants || 0);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -125,7 +126,7 @@ export default function TournamentDetail() {
             <div>
               <p className="text-text-secondary text-sm">Participants</p>
               <p className="text-2xl font-bold">
-                {tournament.participants.length} / {tournament.maxParticipants}
+                {(tournament.participants || []).length} / {tournament.maxParticipants || 0}
               </p>
             </div>
           </div>
@@ -234,7 +235,7 @@ export default function TournamentDetail() {
         <Card>
           <h2 className="text-xl font-bold mb-4">Participants</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {(tournament.participants || []).map((participantId, index) => (
+            {participants.map((participantId, index) => (
               <div
                 key={participantId}
                 className="p-3 bg-bg-tertiary rounded-lg hover:bg-bg-hover transition-colors"

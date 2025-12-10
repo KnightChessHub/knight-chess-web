@@ -529,9 +529,9 @@ export default function Dashboard() {
                 </Button>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {activityFeed.map((activity, index) => (
+                {activityFeed.filter(activity => activity != null).map((activity, index) => (
                   <div
-                    key={activity._id || index}
+                    key={activity?._id || index}
                     className="glass-light rounded-lg p-3 hover:glass transition-all border border-border/50"
                   >
                     <div className="flex items-start gap-3">
@@ -540,10 +540,10 @@ export default function Dashboard() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-text-primary font-medium">
-                          {activity.message || activity.description || 'Activity update'}
+                          {activity?.message || activity?.description || activity?.title || 'Activity update'}
                         </p>
                         <p className="text-xs text-text-tertiary mt-1">
-                          {activity.createdAt ? getTimeAgo(activity.createdAt) : 'Recently'}
+                          {activity?.createdAt ? getTimeAgo(activity.createdAt) : 'Recently'}
                         </p>
                       </div>
                     </div>

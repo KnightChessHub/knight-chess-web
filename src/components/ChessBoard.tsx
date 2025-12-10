@@ -34,14 +34,12 @@ export default function ChessBoard({
   const [hoveredSquare, setHoveredSquare] = useState<Square | null>(null);
 
   useEffect(() => {
-    console.log('ChessBoard orientation changed to:', orientation);
-  }, [orientation]);
-
-  useEffect(() => {
     if (fen) {
       try {
         const newGame = new Chess(fen);
         setGame(newGame);
+        setSelectedSquare(null);
+        setValidMoves([]);
       } catch (e) {
         console.error('Invalid FEN:', e);
       }
@@ -53,30 +51,20 @@ export default function ChessBoard({
     return isLight ? '#f0d9b5' : '#b58863';
   };
 
-  const getFileLabel = (col: number): string => {
-    const files = 'abcdefgh';
-    return files[orientation === 'white' ? col : 7 - col];
-  };
-
-  const getRankLabel = (row: number): string => {
-    const ranks = '87654321';
-    return ranks[orientation === 'white' ? row : 7 - row];
-  };
-
-  const getSquareName = (row: number, col: number): Square => {
+  const getSquareName = (visualRow: number, visualCol: number): Square => {
     const files = 'abcdefgh';
     const ranks = '87654321';
-    // row and col are actual board coordinates (0-7), not visual positions
-    // So we can use them directly
-    return `${files[col]}${ranks[row]}` as Square;
+    
+    if (orientation === 'white') {
+      return `${files[visualCol]}${ranks[visualRow]}` as Square;
+    } else {
+      return `${files[7 - visualCol]}${ranks[7 - visualRow]}` as Square;
+    }
   };
 
   const handleSquareClick = useCallback(
     (square: Square) => {
-      if (disabled) {
-        console.log('Board is disabled');
-        return;
-      }
+      if (disabled) return;
 
       if (selectedSquare === square) {
         setSelectedSquare(null);
@@ -85,12 +73,8 @@ export default function ChessBoard({
       }
 
       const piece = game.get(square);
-      // Check if it's the correct player's turn based on FEN
-      const currentTurn = game.turn(); // 'w' or 'b'
-      const expectedColor = orientation === 'white' ? 'w' : 'b';
 
       if (selectedSquare && validMoves.includes(square)) {
-        // Make move - only check if disabled prop allows it
         try {
           const move = game.move({
             from: selectedSquare,
@@ -98,7 +82,6 @@ export default function ChessBoard({
             promotion: 'q',
           });
           if (move && onMove) {
-            console.log('Sending move:', move.san);
             onMove(move.san);
           }
           setSelectedSquare(null);
@@ -106,40 +89,29 @@ export default function ChessBoard({
         } catch (e) {
           console.error('Invalid move:', e);
           toast.error('Invalid move');
-        }
-      } else if (piece && piece.color === expectedColor && currentTurn === expectedColor) {
-        // Select piece - only if it's the correct color and turn
-        // The disabled prop should prevent this if it's not the user's turn
-        // But if disabled is false, allow selection even if turn check fails (for offline games)
-        if (!disabled) {
-          setSelectedSquare(square);
-          const moves = game.moves({ square, verbose: true });
-          setValidMoves(moves.map((m) => m.to as Square));
-        } else {
           setSelectedSquare(null);
           setValidMoves([]);
         }
+      } else if (piece) {
+        setSelectedSquare(square);
+        const moves = game.moves({ square, verbose: true });
+        setValidMoves(moves.map((m) => m.to as Square));
       } else {
         setSelectedSquare(null);
         setValidMoves([]);
-        if (piece && piece.color !== expectedColor) {
-          console.log('Not your piece');
-        } else if (currentTurn !== expectedColor) {
-          console.log('Not your turn - current:', currentTurn, 'expected:', expectedColor);
-        }
       }
     },
-    [game, selectedSquare, validMoves, orientation, disabled, onMove]
+    [game, selectedSquare, validMoves, disabled, onMove]
   );
 
   const isSquareSelected = (square: Square) => selectedSquare === square;
   const isValidMove = (square: Square) => validMoves.includes(square);
   const isHovered = (square: Square) => hoveredSquare === square;
 
-  const renderSquare = (row: number, col: number) => {
-    const square = getSquareName(row, col);
+  const renderSquare = (visualRow: number, visualCol: number) => {
+    const square = getSquareName(visualRow, visualCol);
     const piece = game.get(square);
-    const bgColor = getSquareColor(row, col);
+    const bgColor = getSquareColor(visualRow, visualCol);
     const isSelected = isSquareSelected(square);
     const isValid = isValidMove(square);
     const hovered = isHovered(square);
@@ -221,12 +193,18 @@ export default function ChessBoard({
     );
   };
 
-  // Row 0 = rank 8 (black pieces), Row 7 = rank 1 (white pieces)
-  // When orientation is 'white', white pieces should be at bottom (row 7 first)
-  // When orientation is 'black', black pieces should be at bottom (row 0 first)
-  // Columns are always left-to-right (a-h), regardless of orientation
-  const rows = orientation === 'white' ? [7, 6, 5, 4, 3, 2, 1, 0] : [0, 1, 2, 3, 4, 5, 6, 7];
-  const cols = [0, 1, 2, 3, 4, 5, 6, 7]; // Always left-to-right (a-h)
+  const visualRows = [0, 1, 2, 3, 4, 5, 6, 7];
+  const visualCols = [0, 1, 2, 3, 4, 5, 6, 7];
+
+  const getFileLabel = (visualCol: number): string => {
+    const files = 'abcdefgh';
+    return orientation === 'white' ? files[visualCol] : files[7 - visualCol];
+  };
+
+  const getRankLabel = (visualRow: number): string => {
+    const ranks = '87654321';
+    return orientation === 'white' ? ranks[visualRow] : ranks[7 - visualRow];
+  };
 
   return (
     <div
@@ -240,7 +218,6 @@ export default function ChessBoard({
         padding: '8px',
       }}
     >
-      {/* File labels (a-h) */}
       <div
         style={{
           display: 'grid',
@@ -249,7 +226,7 @@ export default function ChessBoard({
           paddingLeft: '4px',
         }}
       >
-        {cols.map((col) => (
+        {visualCols.map((col) => (
           <div
             key={`file-${col}`}
             style={{
@@ -266,7 +243,6 @@ export default function ChessBoard({
       </div>
 
       <div style={{ display: 'flex' }}>
-        {/* Rank labels (1-8) */}
         <div
           style={{
             display: 'flex',
@@ -276,7 +252,7 @@ export default function ChessBoard({
             paddingTop: '4px',
           }}
         >
-          {rows.map((row) => (
+          {visualRows.map((row) => (
             <div
               key={`rank-${row}`}
               style={{
@@ -295,7 +271,6 @@ export default function ChessBoard({
           ))}
         </div>
 
-        {/* Board */}
         <div
           style={{
             display: 'grid',
@@ -306,10 +281,11 @@ export default function ChessBoard({
             overflow: 'hidden',
           }}
         >
-          {rows.map((row) => cols.map((col) => renderSquare(row, col)))}
+          {visualRows.map((row) => 
+            visualCols.map((col) => renderSquare(row, col))
+          )}
         </div>
       </div>
     </div>
   );
 }
-

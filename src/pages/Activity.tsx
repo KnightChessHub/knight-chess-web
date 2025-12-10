@@ -38,23 +38,27 @@ export default function Activity() {
         ]);
 
         const activityItems: ActivityItem[] = [
-          ...games.slice(0, 5).map((game) => ({
-            _id: game._id,
+          ...(games || []).slice(0, 5).map((game) => ({
+            _id: game?._id || '',
             type: 'game' as const,
             title: 'Game Completed',
-            description: `${game.whitePlayerUsername} vs ${game.blackPlayerUsername}`,
-            link: `/games/${game._id}`,
-            createdAt: game.updatedAt,
+            description: `${game?.whitePlayerUsername || 'White'} vs ${game?.blackPlayerUsername || 'Black'}`,
+            link: `/games/${game?._id || ''}`,
+            createdAt: game?.updatedAt || game?.createdAt || new Date().toISOString(),
           })),
-          ...tournaments.slice(0, 3).map((tournament) => ({
-            _id: tournament._id,
+          ...(tournaments || []).slice(0, 3).map((tournament) => ({
+            _id: tournament?._id || '',
             type: 'tournament' as const,
             title: 'Tournament Started',
-            description: tournament.name,
-            link: `/tournaments/${tournament._id}`,
-            createdAt: tournament.startDate,
+            description: tournament?.name || 'Tournament',
+            link: `/tournaments/${tournament?._id || ''}`,
+            createdAt: tournament?.startDate || tournament?.createdAt || new Date().toISOString(),
           })),
-        ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        ].filter(item => item._id).sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
+        });
 
         setActivities(activityItems);
       } catch (fallbackError) {
