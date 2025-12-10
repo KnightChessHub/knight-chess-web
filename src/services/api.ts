@@ -39,15 +39,56 @@ class ApiService {
       (error) => Promise.reject(error)
     );
 
-    // Response interceptor for error handling
+    // Response interceptor for error handling with retry logic
     this.api.interceptors.response.use(
       (response) => response,
-      (error: AxiosError) => {
+      async (error: AxiosError) => {
+        const originalRequest = error.config as any;
+        
+        // Handle 401 Unauthorized
         if (error.response?.status === 401) {
           localStorage.removeItem('token');
           localStorage.removeItem('user');
           window.location.href = '/login';
+          return Promise.reject(error);
         }
+
+        // Retry logic for network errors or 5xx errors
+        if (
+          (!error.response || (error.response.status >= 500 && error.response.status < 600)) &&
+          originalRequest &&
+          !originalRequest._retry &&
+          originalRequest._retryCount < 2
+        ) {
+          originalRequest._retry = true;
+          originalRequest._retryCount = (originalRequest._retryCount || 0) + 1;
+          
+          // Wait before retrying (exponential backoff)
+          await new Promise(resolve => setTimeout(resolve, 1000 * originalRequest._retryCount));
+          
+          return this.api(originalRequest);
+        }
+
+        // Better error messages
+        if (error.response) {
+          const status = error.response.status;
+          const data = error.response.data as any;
+          
+          if (status === 404) {
+            error.message = data?.error || 'Resource not found';
+          } else if (status === 403) {
+            error.message = data?.error || 'Access denied';
+          } else if (status >= 500) {
+            error.message = data?.error || 'Server error. Please try again later.';
+          } else if (status === 429) {
+            error.message = 'Too many requests. Please wait a moment.';
+          } else {
+            error.message = data?.error || error.message || 'An error occurred';
+          }
+        } else if (error.request) {
+          error.message = 'Network error. Please check your connection.';
+        }
+
         return Promise.reject(error);
       }
     );

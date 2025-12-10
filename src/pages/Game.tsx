@@ -350,13 +350,17 @@ export default function GamePage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Chess Board */}
         <div className="lg:col-span-2 flex flex-col items-center space-y-6 animate-scale-in">
-          <div className="w-full flex justify-center glass-card rounded-2xl p-8 shadow-2xl">
-            <ChessBoard
-              fen={game.fen}
-              onMove={handleMove}
-              orientation={orientation}
-              disabled={!(game.status === 'active' && isMyTurn)}
-            />
+          <div className="w-full flex justify-center glass-card rounded-2xl p-8 shadow-premium border-2 border-primary/20 relative overflow-hidden">
+            {/* Background glow effect */}
+            <div className="absolute top-0 right-0 w-64 h-64 gradient-glow rounded-full blur-3xl opacity-20"></div>
+            <div className="relative z-10">
+              <ChessBoard
+                fen={game.fen}
+                onMove={handleMove}
+                orientation={orientation}
+                disabled={!(game.status === 'active' && isMyTurn)}
+              />
+            </div>
           </div>
 
           {/* Move History */}
@@ -383,10 +387,10 @@ export default function GamePage() {
         {/* Game Info */}
         <div className="space-y-6">
           {/* Players */}
-          <Card className="animate-scale-in" style={{ animationDelay: '0.1s' }}>
+          <Card className="animate-scale-in shadow-premium border-2 border-border/50" style={{ animationDelay: '0.1s' }}>
             <h3 className="text-xl font-bold mb-5">Players</h3>
             <div className="space-y-4">
-              <div className={`flex items-center justify-between p-4 bg-bg-tertiary rounded-xl transition-all ${isMyTurn && isWhitePlayer ? 'ring-2 ring-primary' : ''}`}>
+              <div className={`flex items-center justify-between p-4 bg-bg-tertiary rounded-xl transition-all border-2 ${isMyTurn && isWhitePlayer ? 'ring-2 ring-primary shadow-glow-primary border-primary/30' : 'border-border/50'}`}>
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-bg-primary font-bold shadow-lg">
                     W
@@ -401,7 +405,7 @@ export default function GamePage() {
                 )}
               </div>
 
-              <div className={`flex items-center justify-between p-4 bg-bg-tertiary rounded-xl transition-all ${isMyTurn && isBlackPlayer ? 'ring-2 ring-primary' : ''}`}>
+              <div className={`flex items-center justify-between p-4 bg-bg-tertiary rounded-xl transition-all border-2 ${isMyTurn && isBlackPlayer ? 'ring-2 ring-primary shadow-glow-primary border-primary/30' : 'border-border/50'}`}>
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 bg-bg-primary border-2 border-white rounded-xl flex items-center justify-center text-white font-bold shadow-lg">
                     B

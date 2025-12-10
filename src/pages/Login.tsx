@@ -31,22 +31,27 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bg-primary" style={{ padding: '2rem 1.5rem' }}>
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-bg-primary relative overflow-hidden" style={{ padding: '2rem 1.5rem' }}>
+      {/* Background gradient effects */}
+      <div className="absolute inset-0 gradient-hero opacity-50"></div>
+      <div className="absolute top-0 right-0 w-96 h-96 gradient-glow rounded-full blur-3xl opacity-30 animate-pulse-glow"></div>
+      <div className="absolute bottom-0 left-0 w-96 h-96 gradient-glow rounded-full blur-3xl opacity-20 animate-float"></div>
+      
+      <div className="w-full max-w-md relative z-10">
         {/* Logo and Title */}
         <div className="text-center animate-slide-up" style={{ marginBottom: '2.5rem' }}>
           <div className="flex items-center justify-center mb-4" style={{ gap: '1rem' }}>
-            <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/30 animate-glow">
+            <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary-light rounded-2xl flex items-center justify-center flex-shrink-0 shadow-premium animate-pulse-glow">
               <span className="text-3xl text-white font-bold leading-none">♘</span>
             </div>
-            <h1 className="text-4xl font-bold text-text-primary tracking-tight">KnightChess</h1>
+            <h1 className="text-4xl font-bold text-text-primary tracking-tight bg-gradient-to-r from-text-primary to-primary-light bg-clip-text text-transparent">KnightChess</h1>
           </div>
           <h2 className="text-2xl font-bold text-text-primary mb-2">Welcome back</h2>
           <p className="text-text-secondary">Sign in to your account to continue</p>
         </div>
 
         {/* Login Form */}
-        <div className="glass-form rounded-2xl animate-scale-in" style={{ padding: '2.5rem' }}>
+        <div className="glass-form rounded-2xl animate-scale-in shadow-premium border-2 border-primary/20" style={{ padding: '2.5rem' }}>
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div>
               <Input

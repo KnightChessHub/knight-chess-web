@@ -5,6 +5,7 @@ import { apiService } from '../services/api';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import ChessLoader from '../components/ChessLoader';
+import { SkeletonRatingCard, SkeletonCard } from '../components/Skeleton';
 import {
   Trophy,
   TrendingUp,
@@ -139,23 +140,35 @@ export default function Dashboard() {
   };
 
   if (isLoading) {
-    return <ChessLoader />;
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <SkeletonCard />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <SkeletonRatingCard key={i} />
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }} className="animate-fade-in">
       {/* Hero Welcome Section */}
-      <div className="glass-card rounded-xl p-5 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="glass-card rounded-xl p-5 animate-slide-up gradient-primary border-2 border-primary/20 shadow-premium relative overflow-hidden" style={{ animationDelay: '0.1s' }}>
+        {/* Background glow effect */}
+        <div className="absolute top-0 right-0 w-64 h-64 gradient-glow rounded-full blur-3xl opacity-20"></div>
+        
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative z-10">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/30">
+              <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary-light rounded-xl flex items-center justify-center flex-shrink-0 shadow-glow-primary animate-pulse-glow">
                 <span className="text-2xl text-white font-bold leading-none">♘</span>
               </div>
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold mb-1 tracking-tight">
                   Welcome back,{' '}
-                  <span className="text-primary bg-primary/10 px-2 py-0.5 rounded-lg text-lg">{user?.username}</span>
+                  <span className="text-primary bg-primary/10 px-2 py-0.5 rounded-lg text-lg border border-primary/20">{user?.username}</span>
                 </h1>
                 <p className="text-text-secondary text-sm">
                   {activeGames.length > 0
@@ -212,11 +225,11 @@ export default function Dashboard() {
           const colors = colorClasses[timeControl];
 
           return (
-            <Card key={timeControl} className="glass-card animate-scale-in hover:scale-[1.02] transition-transform" style={{ animationDelay: `${0.2 + index * 0.1}s` }}>
+            <Card key={timeControl} className="glass-card animate-scale-in hover:scale-[1.02] transition-all duration-300 shadow-glow-hover border-2 border-border/50 hover:border-primary/30" style={{ animationDelay: `${0.2 + index * 0.1}s` }}>
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
                   <p className="text-text-secondary text-xs mb-2 font-semibold uppercase tracking-wider capitalize">{timeControl}</p>
-                  <p className={`text-3xl font-bold ${colors.text} tracking-tight mb-1`}>
+                  <p className={`text-3xl font-bold ${colors.text} tracking-tight mb-1 bg-gradient-to-r ${colors.text} bg-clip-text text-transparent`}>
                     {ratingValue}
                   </p>
                   {peakRating && peakRating > ratingValue && (
