@@ -45,7 +45,7 @@ export function useWebSocket(gameId: string | null, onMessage?: (data: any) => v
           reconnectAttemptsRef.current = 0;
           console.log('WebSocket connected');
           if (gameId) {
-            socket?.emit('join_game', gameId);
+            socket?.emit('game:join', gameId);
           }
         });
 
@@ -86,6 +86,13 @@ export function useWebSocket(gameId: string | null, onMessage?: (data: any) => v
             onMessage({ type: 'player_joined', gameId: data.gameId });
           }
         });
+
+        socket.on('game:move', (data) => {
+          if (onMessage && isConnected) {
+            console.log('Move received via WebSocket:', data);
+            onMessage({ type: 'move_made', game: data.game, move: data.move, gameId: data.gameId });
+          }
+        });
       } catch (error) {
         console.warn('Failed to initialize WebSocket:', error);
       }
@@ -98,7 +105,7 @@ export function useWebSocket(gameId: string | null, onMessage?: (data: any) => v
       if (socket) {
         try {
           if (gameId && isConnected) {
-            socket.emit('leave_game', gameId);
+            socket.emit('game:leave', gameId);
           }
           socket.disconnect();
         } catch (error) {

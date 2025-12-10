@@ -105,15 +105,21 @@ export default function GamePage() {
 
   // WebSocket for real-time updates
   useWebSocket(id || null, useCallback((data: any) => {
-    if (data.game) {
-      setGame(data.game);
-      setCurrentGame(data.game);
+    console.log('WebSocket message received:', data);
+    if (data.type === 'move_made' && data.game) {
+      // Reload game to get normalized data from backend
+      console.log('Move made by opponent, reloading game...');
+      loadGame();
+      toast.success('Opponent made a move!');
+    } else if (data.game) {
+      // Reload game to get normalized data from backend
+      loadGame();
     } else if (data.type === 'player_joined') {
       // When a player joins, reload the game to get updated status
       console.log('Player joined, reloading game...');
       loadGame();
     }
-  }, [setCurrentGame, loadGame]));
+  }, [loadGame]));
 
   useEffect(() => {
     if (game && user) {
@@ -194,11 +200,13 @@ export default function GamePage() {
       setGame(updatedGame);
       setCurrentGame(updatedGame);
       toast.success('Move made!');
-      // Reload game to get latest state
-      setTimeout(() => loadGame(), 500);
+      // WebSocket will handle syncing to other player, but reload after a short delay to ensure consistency
+      setTimeout(() => loadGame(), 1000);
     } catch (error: any) {
       console.error('Move error:', error);
       toast.error(error.response?.data?.error || 'Invalid move');
+      // Reload game on error to refresh state
+      loadGame();
     }
   };
 
