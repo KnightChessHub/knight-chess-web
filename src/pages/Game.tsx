@@ -117,14 +117,21 @@ export default function GamePage() {
 
   useEffect(() => {
     if (game && user) {
-      // Use string comparison to ensure exact match
-      const isWhitePlayer = String(game.whitePlayer) === String(user._id);
-      const isBlackPlayer = game.blackPlayer ? String(game.blackPlayer) === String(user._id) : false;
+      // Use string comparison to ensure exact match with proper null checks
+      const userId = user._id ? String(user._id) : '';
+      const whitePlayerId = game.whitePlayer ? String(game.whitePlayer) : '';
+      const blackPlayerId = game.blackPlayer ? String(game.blackPlayer) : '';
+      
+      const isWhitePlayer = userId && whitePlayerId && userId === whitePlayerId;
+      const isBlackPlayer = userId && blackPlayerId && userId === blackPlayerId;
       
       console.log('Player identification:', {
         whitePlayer: game.whitePlayer,
         blackPlayer: game.blackPlayer,
         userId: user._id,
+        whitePlayerId,
+        blackPlayerId,
+        userIdStr: userId,
         isWhitePlayer,
         isBlackPlayer,
         gameType: game.gameType
@@ -223,14 +230,20 @@ export default function GamePage() {
   }
 
   // Use string comparison to handle ObjectId vs string
-  const isWhitePlayer = String(game.whitePlayer) === String(user?._id);
-  const isBlackPlayer = game.blackPlayer ? String(game.blackPlayer) === String(user?._id) : false;
+  const userId = user?._id ? String(user._id) : '';
+  const whitePlayerId = game.whitePlayer ? String(game.whitePlayer) : '';
+  const blackPlayerId = game.blackPlayer ? String(game.blackPlayer) : '';
+  
+  const isWhitePlayer = userId && whitePlayerId && userId === whitePlayerId;
+  const isBlackPlayer = userId && blackPlayerId && userId === blackPlayerId;
   const isPlayer = isWhitePlayer || isBlackPlayer;
+  
   // Can join if: game is waiting/pending, user is not a player, game is online, and black player slot is empty
   const canJoin = (game.status === 'waiting' || game.status === 'pending')
     && !isPlayer 
     && game.gameType === 'online' 
-    && !game.blackPlayer;
+    && !game.blackPlayer
+    && userId; // User must be logged in
 
   const handleJoin = async () => {
     if (!id) return;

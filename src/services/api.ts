@@ -197,10 +197,15 @@ class ApiService {
   }
 
   // Games
-  async createGame(timeControl: { initial: number; increment: number }, gameType: 'online' | 'offline' = 'online', blackPlayerId?: string): Promise<Game> {
+  async createGame(timeControl: { initial: number; increment: number }, gameType: 'online' | 'offline' = 'online', blackPlayerId?: string, preferredSide?: 'white' | 'black' | 'random'): Promise<Game> {
     const payload: any = { gameType };
-    if (gameType === 'online' && blackPlayerId) {
-      payload.blackPlayerId = blackPlayerId;
+    if (gameType === 'online') {
+      if (blackPlayerId) {
+        payload.blackPlayerId = blackPlayerId;
+      }
+      if (preferredSide) {
+        payload.preferredSide = preferredSide;
+      }
     }
     
     try {

@@ -15,6 +15,8 @@ export default function Games() {
   const [games, setGames] = useState<Game[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'active' | 'waiting' | 'finished'>('all');
+  const [showSideSelection, setShowSideSelection] = useState(false);
+  const [selectedTimeControl, setSelectedTimeControl] = useState<{ initial: number; increment: number; label: string } | null>(null);
 
   useEffect(() => {
     loadGames();
@@ -160,24 +162,9 @@ export default function Games() {
                   key={`online-${tc.label}`}
                   variant="secondary"
                   size="sm"
-                  onClick={async () => {
-                    try {
-                      const activeGames = games.filter(
-                        (g) => g.status === 'active' && (g.whitePlayer === user?._id || g.blackPlayer === user?._id)
-                      );
-                      if (activeGames.length > 0) {
-                        const shouldContinue = window.confirm(
-                          `You have ${activeGames.length} active game${activeGames.length > 1 ? 's' : ''}. Do you want to create another game anyway?`
-                        );
-                        if (!shouldContinue) return;
-                      }
-                      const game = await apiService.createGame({ initial: tc.initial, increment: tc.increment }, 'online');
-                      toast.success('Online game created! Waiting for opponent...');
-                      navigate(`/games/${game._id}`);
-                      loadGames();
-                    } catch (error: any) {
-                      toast.error(error.response?.data?.error || 'Failed to create online game');
-                    }
+                  onClick={() => {
+                    setSelectedTimeControl({ initial: tc.initial, increment: tc.increment, label: tc.label });
+                    setShowSideSelection(true);
                   }}
                   className="flex items-center gap-2"
                 >
@@ -410,6 +397,150 @@ export default function Games() {
               </Card>
             );
           })}
+        </div>
+      )}
+
+      {/* Side Selection Modal */}
+      {showSideSelection && selectedTimeControl && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in">
+          <Card className="w-full max-w-md mx-4 animate-scale-in">
+            <h2 className="text-2xl font-bold mb-4">Choose Your Side</h2>
+            <p className="text-text-secondary mb-6">
+              Select which color you want to play as for this {selectedTimeControl.label} game
+            </p>
+            <div className="space-y-3 mb-6">
+              <Button
+                variant="primary"
+                size="lg"
+                className="w-full justify-start"
+                onClick={async () => {
+                  try {
+                    const activeGames = games.filter(
+                      (g) => g.status === 'active' && (g.whitePlayer === user?._id || g.blackPlayer === user?._id)
+                    );
+                    if (activeGames.length > 0) {
+                      const shouldContinue = window.confirm(
+                        `You have ${activeGames.length} active game${activeGames.length > 1 ? 's' : ''}. Do you want to create another game anyway?`
+                      );
+                      if (!shouldContinue) {
+                        setShowSideSelection(false);
+                        setSelectedTimeControl(null);
+                        return;
+                      }
+                    }
+                    const game = await apiService.createGame(
+                      { initial: selectedTimeControl.initial, increment: selectedTimeControl.increment },
+                      'online',
+                      undefined,
+                      'white'
+                    );
+                    toast.success('Online game created! Waiting for opponent...');
+                    setShowSideSelection(false);
+                    setSelectedTimeControl(null);
+                    navigate(`/games/${game._id}`);
+                    loadGames();
+                  } catch (error: any) {
+                    toast.error(error.response?.data?.error || 'Failed to create online game');
+                  }
+                }}
+              >
+                <div className="w-8 h-8 bg-white rounded flex items-center justify-center text-bg-primary font-bold mr-3">
+                  W
+                </div>
+                Play as White
+              </Button>
+              <Button
+                variant="secondary"
+                size="lg"
+                className="w-full justify-start"
+                onClick={async () => {
+                  try {
+                    const activeGames = games.filter(
+                      (g) => g.status === 'active' && (g.whitePlayer === user?._id || g.blackPlayer === user?._id)
+                    );
+                    if (activeGames.length > 0) {
+                      const shouldContinue = window.confirm(
+                        `You have ${activeGames.length} active game${activeGames.length > 1 ? 's' : ''}. Do you want to create another game anyway?`
+                      );
+                      if (!shouldContinue) {
+                        setShowSideSelection(false);
+                        setSelectedTimeControl(null);
+                        return;
+                      }
+                    }
+                    const game = await apiService.createGame(
+                      { initial: selectedTimeControl.initial, increment: selectedTimeControl.increment },
+                      'online',
+                      undefined,
+                      'black'
+                    );
+                    toast.success('Online game created! Waiting for opponent...');
+                    setShowSideSelection(false);
+                    setSelectedTimeControl(null);
+                    navigate(`/games/${game._id}`);
+                    loadGames();
+                  } catch (error: any) {
+                    toast.error(error.response?.data?.error || 'Failed to create online game');
+                  }
+                }}
+              >
+                <div className="w-8 h-8 bg-bg-primary rounded flex items-center justify-center text-white font-bold mr-3">
+                  B
+                </div>
+                Play as Black
+              </Button>
+              <Button
+                variant="ghost"
+                size="lg"
+                className="w-full justify-start"
+                onClick={async () => {
+                  try {
+                    const activeGames = games.filter(
+                      (g) => g.status === 'active' && (g.whitePlayer === user?._id || g.blackPlayer === user?._id)
+                    );
+                    if (activeGames.length > 0) {
+                      const shouldContinue = window.confirm(
+                        `You have ${activeGames.length} active game${activeGames.length > 1 ? 's' : ''}. Do you want to create another game anyway?`
+                      );
+                      if (!shouldContinue) {
+                        setShowSideSelection(false);
+                        setSelectedTimeControl(null);
+                        return;
+                      }
+                    }
+                    const game = await apiService.createGame(
+                      { initial: selectedTimeControl.initial, increment: selectedTimeControl.increment },
+                      'online',
+                      undefined,
+                      'random'
+                    );
+                    toast.success('Online game created! Waiting for opponent...');
+                    setShowSideSelection(false);
+                    setSelectedTimeControl(null);
+                    navigate(`/games/${game._id}`);
+                    loadGames();
+                  } catch (error: any) {
+                    toast.error(error.response?.data?.error || 'Failed to create online game');
+                  }
+                }}
+              >
+                <div className="w-8 h-8 bg-gradient-to-br from-white to-bg-primary rounded flex items-center justify-center font-bold mr-3">
+                  ?
+                </div>
+                Random Side
+              </Button>
+            </div>
+            <Button
+              variant="ghost"
+              className="w-full"
+              onClick={() => {
+                setShowSideSelection(false);
+                setSelectedTimeControl(null);
+              }}
+            >
+              Cancel
+            </Button>
+          </Card>
         </div>
       )}
     </div>
