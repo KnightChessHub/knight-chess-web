@@ -196,8 +196,8 @@ class ApiService {
     return undefined;
   }
 
-  // Helper to normalize game data from backend
-  private normalizeGameData(gameData: any, timeControl?: { initial: number; increment: number }): Game {
+  // Helper to normalize game data from backend (public for WebSocket use)
+  normalizeGameData(gameData: any, timeControl?: { initial: number; increment: number }): Game {
     // For offline games, blackPlayer should be same as whitePlayer
     // For online games without blackPlayer, blackPlayer should be undefined
     const gameType = gameData.gameType || 'online';

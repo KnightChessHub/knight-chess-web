@@ -106,20 +106,44 @@ export default function GamePage() {
   // WebSocket for real-time updates
   useWebSocket(id || null, useCallback((data: any) => {
     console.log('WebSocket message received:', data);
+    
     if (data.type === 'move_made' && data.game) {
-      // Reload game to get normalized data from backend
-      console.log('Move made by opponent, reloading game...');
-      loadGame();
+      // Update game state directly from WebSocket data
+      console.log('Move made by opponent, updating game state...');
+      const normalizedGame = apiService.normalizeGameData ? 
+        apiService.normalizeGameData(data.game) : 
+        data.game;
+      setGame(normalizedGame);
+      setCurrentGame(normalizedGame);
       toast.success('Opponent made a move!');
-    } else if (data.game) {
-      // Reload game to get normalized data from backend
-      loadGame();
+    } else if (data.type === 'game_update' && data.game) {
+      // Game state updated
+      console.log('Game updated via WebSocket');
+      const normalizedGame = apiService.normalizeGameData ? 
+        apiService.normalizeGameData(data.game) : 
+        data.game;
+      setGame(normalizedGame);
+      setCurrentGame(normalizedGame);
+    } else if (data.type === 'game_finished' && data.game) {
+      // Game finished
+      console.log('Game finished via WebSocket');
+      const normalizedGame = apiService.normalizeGameData ? 
+        apiService.normalizeGameData(data.game) : 
+        data.game;
+      setGame(normalizedGame);
+      setCurrentGame(normalizedGame);
+      toast.success('Game finished!');
     } else if (data.type === 'player_joined') {
       // When a player joins, reload the game to get updated status
       console.log('Player joined, reloading game...');
       loadGame();
+      toast.success('Player joined the game!');
+    } else if (data.game) {
+      // Fallback: reload game if we have game data
+      console.log('Game data received, reloading...');
+      loadGame();
     }
-  }, [loadGame]));
+  }, [loadGame, setCurrentGame]));
 
   useEffect(() => {
     if (game && user) {

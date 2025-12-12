@@ -62,24 +62,31 @@ export function useWebSocket(gameId: string | null, onMessage?: (data: any) => v
           reconnectAttemptsRef.current++;
         });
 
+        // Listen for game updates (compatibility)
         socket.on('game_update', (data) => {
           if (onMessage && isConnected) {
-            onMessage(data);
+            console.log('Game update received:', data);
+            onMessage({ type: 'game_update', ...data });
           }
         });
 
-        socket.on('move_made', (data) => {
+        // Listen for move events (primary)
+        socket.on('game:move', (data) => {
           if (onMessage && isConnected) {
-            onMessage(data);
+            console.log('Move received via WebSocket:', data);
+            onMessage({ type: 'move_made', game: data.game, move: data.move, gameId: data.gameId });
           }
         });
 
+        // Listen for game finished events
         socket.on('game_finished', (data) => {
           if (onMessage && isConnected) {
-            onMessage(data);
+            console.log('Game finished:', data);
+            onMessage({ type: 'game_finished', ...data });
           }
         });
 
+        // Listen for player joined events
         socket.on('game:player-joined', (data) => {
           if (onMessage && isConnected) {
             console.log('Player joined game:', data);
@@ -87,10 +94,11 @@ export function useWebSocket(gameId: string | null, onMessage?: (data: any) => v
           }
         });
 
-        socket.on('game:move', (data) => {
+        // Listen for player left events
+        socket.on('game:player-left', (data) => {
           if (onMessage && isConnected) {
-            console.log('Move received via WebSocket:', data);
-            onMessage({ type: 'move_made', game: data.game, move: data.move, gameId: data.gameId });
+            console.log('Player left game:', data);
+            onMessage({ type: 'player_left', gameId: data.gameId });
           }
         });
       } catch (error) {
